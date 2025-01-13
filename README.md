@@ -32,8 +32,7 @@ This project is a full-fledged eCommerce website built using Django, a high-leve
 ![About-Us Screenshot](Screenshots/About-Us.png)
 
 
-### Shopping Cart Page
-![Cart Page Screenshot](Screenshots/Shopping-Cart.png)
+
 
 ### Login Page
 ![Login Page Screenshot](Screenshots/Login.png)
@@ -44,8 +43,7 @@ This project is a full-fledged eCommerce website built using Django, a high-leve
 ### Forgot Password Page
 ![Forgot Page Screenshot](Screenshots/Password-Reset-Form.png)
 
-### Profile Page
-![Forgot Page Screenshot](Screenshots/Profile.png)
+
 
 ### Address Page
 ![Forgot Page Screenshot](Screenshots/Shipping-Address.png)
