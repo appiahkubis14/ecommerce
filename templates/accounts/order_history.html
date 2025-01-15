@@ -28,7 +28,7 @@
                 {{ order.payment_status }}
                 </span>
             </td>
-            <td>₹{{ order.grand_total }}</td>
+            <td>₵{{ order.grand_total }}</td>
             <td>{{ order.payment_mode }}</td>
             <td>
                 <a href="{% url 'order_details' order.order_id %}" class="btn btn-outline-primary btn-sm">

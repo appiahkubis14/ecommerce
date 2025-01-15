@@ -12,7 +12,7 @@ from products.models import Product, SizeVariant, ProductReview, Wishlist
 
 def get_product(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    sorted_size_variants = product.size_variant.all().order_by('size_name')
+    # sorted_size_variants = product.size_variant.all().order_by('size_name')
     related_products = list(product.category.products.filter(parent=None).exclude(uid=product.uid))
 
     # Review product view
@@ -56,18 +56,18 @@ def get_product(request, slug):
 
     context = {
         'product': product,
-        'sorted_size_variants': sorted_size_variants,
+        # 'sorted_size_variants': sorted_size_variants,
         'related_products': related_products,
         'review_form': review_form,
         'rating_percentage': rating_percentage,
         'in_wishlist': in_wishlist,
     }
 
-    if request.GET.get('size'):
-        size = request.GET.get('size')
-        price = product.get_product_price_by_size(size)
-        context['selected_size'] = size
-        context['updated_price'] = price
+    # if request.GET.get('size'):
+    #     size = request.GET.get('size')
+    #     price = product.get_product_price_by_size(size)
+    #     context['selected_size'] = size
+    #     context['updated_price'] = price
 
     return render(request, 'product/product.html', context=context)
 
@@ -141,15 +141,16 @@ def delete_review(request, slug, review_uid):
 # Add a product to Wishlist
 @login_required
 def add_to_wishlist(request, uid):
-    variant = request.GET.get('size')
-    if not variant:
-        messages.warning(request, 'Please select a size variant before adding to the wishlist!')
-        return redirect(request.META.get('HTTP_REFERER'))
+    # variant = request.GET.get('size')
+    # if not variant:
+    #     messages.warning(request, 'Please select a size variant before adding to the wishlist!')
+    #     return redirect(request.META.get('HTTP_REFERER'))
 
     product = get_object_or_404(Product, uid=uid)
-    size_variant = get_object_or_404(SizeVariant, size_name=variant)
+    # size_variant = get_object_or_404(SizeVariant,)
     wishlist, created = Wishlist.objects.get_or_create(
-        user=request.user, product=product, size_variant=size_variant)
+        user=request.user, product=product
+        )
 
     if created:
         messages.success(request, "Product added to Wishlist!")
@@ -190,12 +191,13 @@ def move_to_cart(request, uid):
         messages.error(request, "Item not found in wishlist.")
         return redirect('wishlist')
 
-    size_variant = wishlist.size_variant
+    # size_variant = wishlist.size_variant
     wishlist.delete()
 
     cart, created = Cart.objects.get_or_create(user=request.user, is_paid=False)
     cart_item, created = CartItem.objects.get_or_create(
-        cart=cart, product=product, size_variant=size_variant)
+        cart=cart, product=product,
+        )
 
     if not created:
         cart_item.quantity += 1

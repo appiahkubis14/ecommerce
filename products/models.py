@@ -45,8 +45,6 @@ class Product(BaseModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products")
     price = models.IntegerField()
     product_desription = models.TextField()
-    color_variant = models.ManyToManyField(ColorVariant, blank=True)
-    size_variant = models.ManyToManyField(SizeVariant, blank=True)
     newest_product = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
@@ -56,12 +54,8 @@ class Product(BaseModel):
     def __str__(self) -> str:
         return self.product_name
 
-    def get_product_price_by_size(self, size):
-        return self.price + SizeVariant.objects.get(size_name=size).price
-
     def get_rating(self):
         total = sum(int(review['stars']) for review in self.reviews.values())
-
         if self.reviews.count() > 0:
             return total / self.reviews.count()
         else:
@@ -99,17 +93,13 @@ class ProductReview(BaseModel):
     def dislike_count(self):
         return self.dislikes.count()
 
-
 class Wishlist(BaseModel):
-    user=models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist")
-    product=models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlisted_by")
-    size_variant=models.ForeignKey(SizeVariant, on_delete=models.SET_NULL, null=True,
-                                     blank=True, related_name="wishlist_items")
-
-    added_on=models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlisted_by")
+    added_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together=('user', 'product', 'size_variant')
+        unique_together = ('user', 'product')
 
     def __str__(self) -> str:
-        return f'{self.user.username} - {self.product.product_name} - {self.size_variant.size_name if self.size_variant else "No Size"}'
+        return f'{self.user.username} - {self.product.product_name}'

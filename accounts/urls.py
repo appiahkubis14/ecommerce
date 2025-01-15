@@ -46,4 +46,10 @@ urlpatterns = [
 
     # Delete user account url
     path('delete-account/', delete_account, name='delete_account'),
+
+    path('payment/initialize/<int:order_id>/', initialize_payment, name='initialize_payment'),
+
+    path('payment/verify/', verify_payment, name='verify_payment'),
+
+    path('process_payment/', process_payment, name='process_payment'),
 ]

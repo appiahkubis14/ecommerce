@@ -35,14 +35,12 @@
                       >
                         {{ cart_item.product.product_name }}
                       </a>
-                      
-                      <p class="text-muted small">
+                       <p class="text-muted small">
                         {% if cart_item.size_variant %}
                           Size: {{ cart_item.size_variant.size_name }}<br />
                         {% else %}
                           Size : N/A <br />
                         {% endif %} 
-                        
                         {% if cart_item.product.color_variant.exists %}
                           {% for color in cart_item.product.color_variant.all %}
                             Color: {{ color.color_name }}<br />
@@ -50,7 +48,6 @@
                         {% else %}
                           Color: N/A<br />
                         {% endif %} 
-
                         Brand: Nike
                       </p>
                     </figcaption>
@@ -65,9 +62,8 @@
                 </td>
                 <td>
                   <div class="price-wrap">
-                    <var class="price">₹{{ cart_item.get_product_price }} </var>
+                    <var class="price">₵{{ cart_item.get_product_price }} </var>
                   </div>
-                  <!-- price-wrap .// -->
                 </td>
                 <td class="text-right">
                   <a
@@ -84,13 +80,12 @@
                   </a>
                 </td>
               </tr>
-
               {% endfor %}
             </tbody>
           </table>
 
           <div class="card-body border-top">
-            <button id="rzp-button1" class="btn btn-primary float-md-right">
+            <button id="rzp-button1" class="btn btn-primary float-md-right" onclick="payWithPaystack()">
               Make Purchase <i class="fa fa-chevron-right"></i>
             </button>
 
@@ -99,7 +94,6 @@
             </a>
           </div>
         </div>
-        <!-- card.// -->
 
         <div class="alert alert-success mt-3">
           <p class="icontext">
@@ -108,7 +102,7 @@
           </p>
         </div>
       </main>
-      <!-- col.// -->
+
       <aside class="col-md-3">
         <div class="card mb-3">
           <div class="card-body">
@@ -130,34 +124,32 @@
               </div>
 
               {% if cart.coupon %}
-
               <a href="{% url 'remove_coupon' cart.uid %}" class="btn btn-success">
                 {{ cart.coupon.coupon_code }}
               </a>
-
               {% endif %}
             </form>
           </div>
-          <!-- card-body.// -->
         </div>
-        <!-- card .// -->
+
         <div class="card">
           <div class="card-body">
             <dl class="dlist-align">
               <dt>Total price:</dt>
               <dd class="text-right">
-                <strong>₹{{ cart.get_cart_total }}</strong>
+                <strong>₵{{ cart.get_cart_total }}</strong>
               </dd>
             </dl>
+
             {% if cart.coupon %}
             <dl class="dlist-align">
               <dt>Discount:</dt>
-              <dd class="text-right">₹{{ cart.coupon.discount_amount }}</dd>
+              <dd class="text-right">₵{{ cart.coupon.discount_amount }}</dd>
             </dl>
             <dl class="dlist-align">
               <dt>Total:</dt>
               <dd class="text-right h5">
-                <strong>₹{{ cart.get_cart_total_price_after_coupon }}</strong>
+                <strong>₵{{ cart.get_cart_total }}</strong>
               </dd>
             </dl>
             {% endif %}
@@ -166,80 +158,48 @@
               <img src="{% static 'images/misc/payments.png' %}" height="26" />
             </p>
           </div>
-          <!-- card-body.// -->
         </div>
-        <!-- card .// -->
       </aside>
-      <!-- col.// -->
     </div>
   </div>
-  <!-- container .//  -->
 </section>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-  var options = {
-    key: "rzp_test_5XxorWz3z1N2m5",
-    amount: "{{ cart.get_cart_total_price_after_coupon|floatformat:0 }}",
-    currency: "INR",
-    name: "Django Ecommerce Site",
-    description: "Purchased",
-    order_id: "{{ payment.id }}",
-
-    handler: function (response) {
-      console.log("Success");
-      window.location.href = `http://127.0.0.1:8000/accounts/success/?order_id={{ payment.id }}`;
-    },
-    prefill: {
-      name: "Gaurav Kumar",
-      email: "gaurav.kumar@example.com",
-      contact: "9000090000",
-    },
-    notes: {
-      address: "Razorpay Corporate Office",
-    },
-    theme: {
-      color: "#3399cc",
-    },
-  };
-  var rzp1 = new Razorpay(options);
-  rzp1.on("payment.failed", function (response) {
-    alert(response.error.code);
-    alert(response.error.description);
-    alert(response.error.source);
-    alert(response.error.step);
-    alert(response.error.reason);
-    alert(response.error.metadata.order_id);
-    alert(response.error.metadata.payment_id);
-  });
-  document.getElementById("rzp-button1").onclick = function (e) {
-    rzp1.open();
-    e.preventDefault();
-  };
-
-  function updateCartItem(selectElement, cartItemId) {
-    const quantity = selectElement.value;
-
-    fetch("{% url 'update_cart_item' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({
-            "cart_item_id": cartItemId,
-            "quantity": quantity
+  function payWithPaystack() {
+    const email = '{{ request.user.email }}';  // Get the user's email from the template context
+    const totalPrice = {{ cart.get_cart_total|floatformat:2 }};  // Get the total price from the cart context and format to 2 decimal places
+    
+    const handler = PaystackPop.setup({
+      key: 'pk_live_3015509bcee8ed8ffa149fdd3c9cd8fd827af326',  // Replace with a valid Paystack public key
+      email: email,
+      amount: totalPrice * 100,  // Convert to kobo
+      currency: 'GHS',
+      ref: 'PS_' + Math.floor((Math.random() * 1000000000) + 1),  // Generate a unique reference
+      callback: function(response) {
+        alert('Payment successful. Transaction reference: ' + response.reference);
+        fetch('/verify_payment/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ reference: response.reference })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert("Error updating cart");
-        }
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            window.location.href = '/order_history/';
+          } else {
+            alert('Payment verification failed. Please try again.');
+          }
+        });
+      },
+      onClose: function() {
+        alert('Payment was not completed.');
+      }
     });
-}
+    handler.openIframe();
+  }
 </script>
 {% endblock %}

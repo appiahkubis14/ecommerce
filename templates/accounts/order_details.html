@@ -37,7 +37,7 @@
                   {% endfor %}
                 {% endif %}
                 <td>{{ item.quantity }}</td>
-                <td>₹ {{ item.product_price }}</td>
+                <td>₵ {{ item.product_price }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -103,21 +103,21 @@
             <dl class="dlist-align">
               <dt style="width: 135px;">Item(s) Subtotal:</dt>
               <dd class="text-right">
-                <strong>₹{{ order.order_total_price }}</strong>
+                <strong>₵{{ order.order_total_price }}</strong>
               </dd>
             </dl>
 
             <dl class="dlist-align">
               <dt style="width: 135px;">Coupon Applied:</dt>
               <dd class="text-right">
-                <strong>₹{{ order.coupon.discount_amount|default:"0" }}</strong>
+                <strong>₵{{ order.coupon.discount_amount|default:"0" }}</strong>
               </dd>
             </dl>
 
             <dl class="dlist-align">
               <dt style="width: 135px;">Grand Total:</dt>
               <dd class="text-right">
-                <strong>₹{{ order.grand_total }}</strong>
+                <strong>₵{{ order.grand_total }}</strong>
               </dd>
             </dl>
           </div>

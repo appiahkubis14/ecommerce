@@ -13,34 +13,37 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from decouple import config
+import dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-
+dotenv.load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = "django-insecure-%bu_y_kl%*u)^i$pkj&1^yisw%99&^n+6)&nzp@+uc_5xdb%7b"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG")
+DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
+PAYSTACK_SECRET_KEY = ''
 
 # Application definition
 
 SITE_ID = 2
 
 INSTALLED_APPS = [
+    "admin_interface",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
+    "colorfield",
     # Apps
     'products',
     'accounts',
@@ -62,47 +65,47 @@ INSTALLED_APPS = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-# Facebook API KEYS
-SOCIAL_AUTH_FACEBOOK_KEY = config('SOCIAL_AUTH_FACEBOOK_KEY')
-SOCIAL_AUTH_FACEBOOK_SECRET = config('SOCIAL_AUTH_FACEBOOK_SECRET')
+# # Facebook API KEYS
+# SOCIAL_AUTH_FACEBOOK_KEY = ''
+# SOCIAL_AUTH_FACEBOOK_SECRET = ''
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email"
-        ],
-        "AUTH_PARAMS": {"access_type": "online"}
-    },
+# SOCIALACCOUNT_PROVIDERS = {
+#     "google": {
+#         "SCOPE": [
+#             "profile",
+#             "email"
+#         ],
+#         "AUTH_PARAMS": {"access_type": "online"}
+#     },
 
-    # Facebook authentication
-    "facebook": {
-        'APP': {
-            # Facebook API KEYS
-            'client_id': SOCIAL_AUTH_FACEBOOK_KEY,
-            'secret': SOCIAL_AUTH_FACEBOOK_SECRET,
-        },
-        'METHOD': 'oauth2',  # Set to 'js_sdk' to use the Facebook connect SDK
-        'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'first_name',
-            'last_name',
-            'middle_name',
-            'name',
-            'name_format',
-            'picture',
-            'short_name',
-        ],
-        'EXCHANGE_TOKEN': True,
-        'VERIFIED_EMAIL': False,
-        'VERSION': 'v17.0',
-        'GRAPH_API_URL': 'https://graph.facebook.com/v17.0',
-    }
-}
+#     # Facebook authentication
+#     "facebook": {
+#         'APP': {
+#             # Facebook API KEYS
+#             'client_id': SOCIAL_AUTH_FACEBOOK_KEY,
+#             'secret': SOCIAL_AUTH_FACEBOOK_SECRET,
+#         },
+#         'METHOD': 'oauth2',  # Set to 'js_sdk' to use the Facebook connect SDK
+#         'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
+#         'SCOPE': ['email', 'public_profile'],
+#         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+#         'INIT_PARAMS': {'cookie': True},
+#         'FIELDS': [
+#             'id',
+#             'first_name',
+#             'last_name',
+#             'middle_name',
+#             'name',
+#             'name_format',
+#             'picture',
+#             'short_name',
+#         ],
+#         'EXCHANGE_TOKEN': True,
+#         'VERIFIED_EMAIL': False,
+#         'VERSION': 'v17.0',
+#         'GRAPH_API_URL': 'https://graph.facebook.com/v17.0',
+#     }
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,13 +142,23 @@ WSGI_APPLICATION = 'ecomm.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -202,14 +215,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = False
 
 # RazorPay API KEYS
-RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
-RAZORPAY_SECRET_KEY = config('RAZORPAY_SECRET_KEY')
+RAZORPAY_KEY_ID = ''
+RAZORPAY_SECRET_KEY = ''
 
 # Auth Backends Configurations
 AUTHENTICATION_BACKENDS = (

@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import razorpay
+import paystackapi
 from weasyprint import CSS, HTML
 from products.models import *
 from django.urls import reverse
@@ -21,7 +22,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import redirect, render, get_object_or_404
 from accounts.forms import UserUpdateForm, UserProfileForm, ShippingAddressForm, CustomPasswordChangeForm
-
+from .utils import Paystack
 
 # Create your views here.
 
@@ -37,9 +38,9 @@ def login_page(request):
             messages.warning(request, 'Account not found!')
             return HttpResponseRedirect(request.path_info)
 
-        if not user_obj[0].profile.is_email_verified:
-            messages.error(request, 'Account not verified!')
-            return HttpResponseRedirect(request.path_info)
+        # if not user_obj[0].profile.is_email_verified:
+        #     messages.error(request, 'Account not verified!')
+        #     return HttpResponseRedirect(request.path_info)
 
         user_obj = authenticate(username=username, password=password)
         if user_obj:
@@ -81,9 +82,9 @@ def register_page(request):
         profile.email_token = str(uuid.uuid4())
         profile.save()
 
-        send_account_activation_email(email, profile.email_token)
-        messages.success(request, "An email has been sent to your mail.")
-        return HttpResponseRedirect(request.path_info)
+        # send_account_activation_email(email, profile.email_token)
+        # messages.success(request, "An email has been sent to your mail.")
+        # return HttpResponseRedirect(request.path_info)
 
     return render(request, 'accounts/register.html')
 
@@ -109,17 +110,17 @@ def activate_email_account(request, email_token):
 @login_required
 def add_to_cart(request, uid):
     try:
-        variant = request.GET.get('size')
-        if not variant:
-            messages.warning(request, 'Please select a size variant!')
-            return redirect(request.META.get('HTTP_REFERER'))
+        # variant = request.GET.get('size')
+        # if not variant:
+        #     messages.warning(request, 'Please select a size variant!')
+        #     return redirect(request.META.get('HTTP_REFERER'))
 
         product = get_object_or_404(Product, uid=uid)
         cart, _ = Cart.objects.get_or_create(user=request.user, is_paid=False)
-        size_variant = get_object_or_404(SizeVariant, size_name=variant)
+        # size_variant = get_object_or_404(SizeVariant, size_name=variant)
 
         cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, product=product, size_variant=size_variant)
+            cart=cart, product=product)
         if not created:
             cart_item.quantity += 1
             cart_item.save()
@@ -132,63 +133,96 @@ def add_to_cart(request, uid):
     return redirect(reverse('cart'))
 
 
+
+
 @login_required
 def cart(request):
     cart_obj = None
-    payment = None
     user = request.user
 
     try:
         cart_obj = Cart.objects.get(is_paid=False, user=user)
-
-    except Exception as e:
-        messages.warning(request, "Your cart is empty. Please add a product to cart.", str(e))
+    except Cart.DoesNotExist:
+        messages.warning(request, "Your cart is empty. Please add a product to cart.")
         return redirect(reverse('index'))
 
-    if request.method == 'POST':
-        coupon = request.POST.get('coupon')
-        coupon_obj = Coupon.objects.filter(coupon_code__exact=coupon).first()
-
-        if not coupon_obj:
-            messages.warning(request, 'Invalid coupon code.')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-        if cart_obj and cart_obj.coupon:
-            messages.warning(request, 'Coupon already exists.')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-        if coupon_obj and coupon_obj.is_expired:
-            messages.warning(request, 'Coupon code expired.')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-        if cart_obj and coupon_obj and cart_obj.get_cart_total() < coupon_obj.minimum_amount:
-            messages.warning(
-                request, f'Amount should be greater than {coupon_obj.minimum_amount}')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-        if cart_obj and coupon_obj:
-            cart_obj.coupon = coupon_obj
-            cart_obj.save()
-            messages.success(request, 'Coupon applied successfully.')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
     if cart_obj:
-        cart_total_in_paise = int(cart_obj.get_cart_total_price_after_coupon() * 100)
+        cart_total_in_paise = cart_obj.get_cart_total()
 
-        if cart_total_in_paise < 100:
-            messages.warning(
-                request, 'Total amount in cart is less than the minimum required amount (1.00 INR). Please add a product to the cart.')
-            return redirect('index')
-
-        client = razorpay.Client(
-            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
-        payment = client.order.create(
-            {'amount': cart_total_in_paise, 'currency': 'INR', 'payment_capture': 1})
-        cart_obj.razorpay_order_id = payment['id']
-        cart_obj.save()
-
-    context = {'cart': cart_obj, 'payment': payment, 'quantity_range': range(1, 6), }
+    context = {'cart': cart_obj, 'quantity_range': range(1, 6)}
     return render(request, 'accounts/cart.html', context)
+
+
+@login_required
+def initialize_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    paystack = Paystack()
+    email = request.user.email
+    amount = int(order.total_price * 100)  # Convert to kobo if using Paystack (e.g., GHS)
+
+    response = paystack.initialize_payment(email, amount)
+
+    if response['status']:
+        payment = payment.objects.create(
+            order=order,
+            user=request.user,
+            amount=order.total_price,
+            payment_method='Paystack',
+            reference=response['data']['reference'],
+            payment_status='Pending',
+        )
+        return redirect(response['data']['authorization_url'])
+    else:
+        return JsonResponse({'error': 'Payment initialization failed'}, status=400)
+
+
+# @csrf_exempt
+def verify_payment(request):
+    reference = request.GET.get('reference')
+    if not reference:
+        return JsonResponse({'error': 'Missing payment reference'}, status=400)
+
+    paystack = Paystack()
+    response = paystack.verify_payment(reference)
+
+    if response['status']:
+        try:
+            payment = Payment.objects.get(reference=reference)
+        except Payment.DoesNotExist:
+            return JsonResponse({'error': 'Payment record not found'}, status=404)
+
+        payment.payment_status = 'Completed'
+        payment.save()
+
+        # Update order status
+        payment.order.status = 'Completed'
+        payment.order.save()
+
+        return JsonResponse({'message': 'Payment successful'}, status=200)
+    else:
+        return JsonResponse({'error': 'Payment verification failed'}, status=400)
+
+
+def process_payment(request):
+    if request.method == "POST":
+        # Get payment method from the form
+        payment_method = request.POST.get("payment_method")
+        
+        if payment_method in ["bank_transfer", "check_payment", "cash_on_delivery"]:
+            # Simulate payment processing (replace with actual logic)
+            request.session['payment_completed'] = True
+            return redirect('checkout')  # Redirect to the checkout or order confirmation page
+        else:
+            # Handle invalid payment method
+            return render(request, 'checkout.html', {"error": "Invalid payment method"})
+    
+    # If not a POST request, redirect to the checkout page
+    return redirect('checkout')
+
+
+
+
 
 
 @require_POST
@@ -361,10 +395,10 @@ def create_order(cart):
         order_id=cart.razorpay_order_id,
         payment_status="Paid",
         shipping_address=cart.user.profile.shipping_address,
-        payment_mode="Razorpay",
+        payment_mode="Paystack",
         order_total_price=cart.get_cart_total(),
-        coupon=cart.coupon,
-        grand_total=cart.get_cart_total_price_after_coupon(),
+        # coupon=cart.coupon,
+        # grand_total=cart.get_cart_total_price_after_coupon(),
     )
 
     # Create OrderItem instances for each item in the cart
@@ -373,8 +407,8 @@ def create_order(cart):
         OrderItem.objects.get_or_create(
             order=order,
             product=cart_item.product,
-            size_variant=cart_item.size_variant,
-            color_variant=cart_item.color_variant,
+            # size_variant=cart_item.size_variant,
+            # color_variant=cart_item.color_variant,
             quantity=cart_item.quantity,
             product_price=cart_item.get_product_price()
         )
@@ -406,3 +440,6 @@ def delete_account(request):
         user.delete()
         messages.success(request, "Your account has been deleted successfully.")
         return redirect('index')
+
+
+
