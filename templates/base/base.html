@@ -8,7 +8,7 @@
 
     <title>{% block title %}Home | Gbeke Ecommerce Site{% endblock %}</title>
 
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/GBEKE Logo.png' %}" />
 
     <!-- Bootstrap CSS -->
     <link href="/media/css/bootstrap.css" rel="stylesheet" type="text/css" />
@@ -95,7 +95,7 @@
           <div class="html-slot-container">
             <input type="hidden" id="endTime" value="null" />
             <div class="content">
-              <marquee
+              {% comment %} <marquee
                 direction="left"
                 width="100%"
                 scrollamount="10"
@@ -106,7 +106,7 @@
                   Use Code NEW10 and get 10% OFF* on non-discounted Shoes over
                   Rs. 4499. Maximum Discount: Rs. 1200. T&amp;C Apply.
                 </span>
-              </marquee>
+              </marquee> {% endcomment %}
             </div>
           </div>
         </div>
