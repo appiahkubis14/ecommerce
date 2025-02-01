@@ -11,9 +11,7 @@
           <div class="col-lg-3 col-md-4 col-12 mb-2">
             <div class="brand-wrap">
               <a href="{% url 'index' %}">
-                <img src="{% static 'images/GBEKE Logo.png' %}" alt="Profile Image"
-                class="rounded-circle"
-                />
+                <img src="{% static 'images/GBEKE Logo.png' %}" alt="Profile Image" class="rounded-circle" />
               </a>
             </div>
           </div>
@@ -25,15 +23,8 @@
               </h4>
               <div class="newsletter-form-head">
                 <form class="newsletter-form">
-                  <input
-                    class="mb-2"
-                    name="email"
-                    placeholder="Email address here..."
-                    type="email"
-                    required=""
-                    value=""
-                    autocomplete="email"
-                  />
+                  <input class="mb-2" name="email" placeholder="Email address here..." type="email" required="" value=""
+                    autocomplete="email" />
                   <div class="button mb-4">
                     <button class="btn">
                       Subscribe<span class="dir-part"></span>
@@ -75,14 +66,11 @@
           <div class="col-lg-4 col-12">
             <div class="payment-gateway">
               <span>We Accept:</span>
-              <img
-                src="{% static 'images/credit-cards-footer.png' %}"
-                alt="#"
-              />
+              <img src="{% static 'images/credit-cards-footer.png' %}" alt="#" />
             </div>
           </div>
           <div class="col-lg-4 col-12">
-           <div class="copyright">
+            <!-- <div class="copyright">
               <p>
                 Designed and Developed by 
                 <a href="" rel="nofollow" target="_blank">
@@ -90,48 +78,36 @@
                 </a>
               </p>
             </div>
-          </div> 
-          <div class="col-lg-4 col-12">
-            <ul class="socila">
-              <li><span>Follow Me On:</span></li>
-              <li>
-                <a
-                  href="#"
-                  rel="nofollow"
-                  target="_blank">
-                  <i class="lni lni-linkedin"></i>
-                </a>
-              </li>
-              {% comment %} <li>
-                <a
-                  href="#"
-                  rel="nofollow"
-                  target="_blank">
-                  <i class="lni lni-github"></i>
-              </a>
-              </li> {% endcomment %}
-              <li>
-                <a
-                  href="#"
-                  rel="nofollow"
-                  target="_blank">
-                  <i class="lni lni-instagram"></i>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  rel="nofollow"
-                  target="_blank">
-                  <i class="lni lni-facebook-filled"></i>
-                </a>
-              </li>
-            </ul>
+          </div>  -->
+            <div class="col-lg-4 col-12">
+              <ul class="socila">
+                <li><span>Follow Us On:</span></li>
+                <li>
+                  <a href="#" rel="nofollow" target="_blank">
+                    <i class="lni lni-linkedin"></i>
+                  </a>
+                </li>
+                {% comment %} <li>
+                  <a href="#" rel="nofollow" target="_blank">
+                    <i class="lni lni-github"></i>
+                  </a>
+                </li> {% endcomment %}
+                <li>
+                  <a href="#" rel="nofollow" target="_blank">
+                    <i class="lni lni-instagram"></i>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" rel="nofollow" target="_blank">
+                    <i class="lni lni-facebook-filled"></i>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 </footer>
 
 {% endblock %}

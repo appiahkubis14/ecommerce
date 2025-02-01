@@ -35,9 +35,7 @@ class Profile(BaseModel):
                 pass
 
         super(Profile, self).save(*args, **kwargs)
-
-
-
+        
 class Cart(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart", null=True, blank=True)
     # coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
