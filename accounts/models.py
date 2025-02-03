@@ -6,8 +6,6 @@ from products.models import Product
 from home.models import ShippingAddress
 from django.conf import settings
 import os
-# Create your models here.
-
 
 class Profile(BaseModel):
     user = models.OneToOneField(
@@ -25,8 +23,7 @@ class Profile(BaseModel):
         return CartItem.objects.filter(cart__is_paid=False, cart__user=self.user).count()
     
     def save(self, *args, **kwargs):
-        # Check if the profile image is being updated and profile exists
-        if self.pk:  # Only if profile exists
+        if self.pk: 
             try:
                 old_profile = Profile.objects.get(pk=self.pk)
                 if old_profile.profile_image and old_profile.profile_image != self.profile_image:
@@ -102,8 +99,7 @@ class Order(BaseModel):
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-    # size_variant = models.ForeignKey(SizeVariant, on_delete=models.SET_NULL, null=True, blank=True)
-    # color_variant = models.ForeignKey(ColorVariant, on_delete=models.SET_NULL, null=True, blank=True)
+   
     quantity = models.PositiveIntegerField(default=1)
     product_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
@@ -114,8 +110,6 @@ class OrderItem(BaseModel):
         # Use the get_product_price method from CartItem
         cart_item = CartItem(
             product=self.product,
-            # size_variant=self.size_variant,
-            # color_variant=self.color_variant,
             quantity=self.quantity
         )
         return cart_item.get_product_price()

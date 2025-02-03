@@ -189,7 +189,7 @@
         .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
-            window.location.href = '/order_history/';
+            window.location.href = '{% url "order_history" %}';
           } else {
             alert('Payment verification failed. Please try again.');
           }
