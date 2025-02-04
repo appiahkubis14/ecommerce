@@ -154,10 +154,10 @@ WSGI_APPLICATION = 'ecomm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'backenddb',
+        'NAME': 'ecommdb',
         'USER': 'mysuperuser',
         'PASSWORD': 'mysuperuser',
-        'HOST': 'backenddb.cc5g6aq86whf.us-east-1.rds.amazonaws.com',
+        'HOST': 'ecommdb.c3eq4gqaqxxi.eu-north-1.rds.amazonaws.com',
         'PORT':'5432',
     }
 }
@@ -244,11 +244,11 @@ DEFAULT_DOMAIN = '127.0.0.1:8000'
 DEFAULT_HTTP_PROTOCOL = 'http'
 
 
-AWS_ACCESS_KEY_ID = 'AKIAWAA66EZFVPGCESP2'
-AWS_SECRET_ACCESS_KEY = 'f0cvBxOpwqjKhNIPFTMsVgPeiygS4BF8'
-AWS_STORAGE_BUCKET_NAME = 'gbekeart'
+AWS_ACCESS_KEY_ID = 'AKIAUW4RAUJ6CCPQ76AK'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'ecommdbbucket'
 AWS_S3_SIGNATURE_NAME = 's3v4'
-AWS_S3_REGION_NAME = 'us-east-1'
+AWS_S3_REGION_NAME = 'eu-north-1'
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL =  None
 AWS_S3_VERIFY = True
