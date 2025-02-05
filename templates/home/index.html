@@ -30,19 +30,19 @@
 <section class="banner-two" style="height: 60%;">
   <div class="banner-two__shape-left d-none d-lg-block wow bounceInLeft" data-wow-duration="1s"
       data-wow-delay=".5s">
-      <img src="{% static 'images/7.jpeg' %}" alt="shape">
+      {% comment %} <img src="{% static 'images/7.jpeg' %}" alt="shape"> {% endcomment %}
   </div>
   <div class="banner-two__shape-right d-none d-lg-block wow bounceInRight" data-wow-duration="1s"
       data-wow-delay=".1s">
-      <img class="sway_Y__animation" src="{% static 'images/7.jpeg' %}" alt="shape">
+      {% comment %} <img class="sway_Y__animation" src="{% static 'images/7.jpeg' %}" alt="shape"> {% endcomment %}
   </div>
   <div class="swiper banner-two__slider">
       <div class="swiper-wrapper">
           <div class="swiper-slide">
-              <div class="slide-bg" data-background="{% static 'images/7.jpeg' %}"></div>
+              <div class="slide-bg" data-background="{% static 'images/7.jpeg' %}" style="width: fit-content; width: 100%;" ></div>
               <div class="container">
                   <div class="banner-two__content">
-                      <h4 data-animation="fadeInUp" data-delay="1s"><img src="{% static 'images/7.jpeg' %}"
+                      <h4 data-animation="fadeInUp" data-delay="1s"><img src=""
                               alt="icon"> GET <span class="primary-color">20% OFF</span> TODAY</h4>
                       <h1 data-animation="fadeInUp" data-delay="1.3s">Discover Premium <br>
                           <span class="primary-color">Tote Bags</span></h1>
@@ -54,17 +54,17 @@
                       <div class="btn-wrp mt-65">
                           <a href="shop.html" class="btn-one" data-animation="fadeInUp"
                               data-delay="1.8s"><span>Shop Now</span></a>
-                          <a class="btn-one-light ml-20" href="shop-single.html" data-animation="fadeInUp"
+                          <a class="btn-one-light ml-20" href="#shop" data-animation="fadeInUp"
                               data-delay="1.9s"><span>View Details</span></a>
                       </div>
                   </div>
               </div>
           </div>
           <div class="swiper-slide">
-              <div class="slide-bg" data-background="{% static 'images/8.webp' %}"></div>
+              <div class="slide-bg" data-background="{% static 'images/8.webp' %}" style="width: fit-content; width: 100%;" ></div>
               <div class="container">
                   <div class="banner-two__content">
-                      <h4 data-animation="fadeInUp" data-delay="1s"><img src="{% static 'images/8.webp' %}"
+                      <h4 data-animation="fadeInUp" data-delay="1s"><img src=""
                               alt="icon"> EXCLUSIVE <span class="primary-color">LIMITED EDITION</span></h4>
                       <h1 data-animation="fadeInUp" data-delay="1.3s">Timeless Design, <br>
                           Unmatched <span class="primary-color">Quality</span></h1>
@@ -76,7 +76,7 @@
                       <div class="btn-wrp mt-65">
                           <a href="shop.html" class="btn-one" data-animation="fadeInUp"
                               data-delay="1.8s"><span>Shop Now</span></a>
-                          <a class="btn-one-light ml-20" href="shop-single.html" data-animation="fadeInUp"
+                          <a class="btn-one-light ml-20" href="#shop" data-animation="fadeInUp"
                               data-delay="1.9s"><span>View Details</span></a>
                       </div>
                   </div>
@@ -187,10 +187,10 @@
                       <img src="{% static 'images/5.jpg' %}" alt="image">
                   </div>
                   <div class="view__left-content sub-bg">
-                      <h2><a class="primary-hover" href="shop-single.html">Stylish & Eco-Friendly Tote Bags</a>
+                      <h2><a class="primary-hover" href="#shop">Stylish & Eco-Friendly Tote Bags</a>
                       </h2>
                       <p class="fw-600">Discover a collection of high-quality tote bags designed for every occasion. Durable, stylish, and eco-conscious.</p>
-                      <a class="btn-two" href="shop-single.html"><span>Shop Now</span></a>
+                      <a class="btn-two" href="#shop"><span>Shop Now</span></a>
                       <a class="off-btn" href="#0"><img class="mr-10" src="assets/images/icon/fire.svg"
                               alt="icon"> GET
                           <span class="primary-color">20%
@@ -201,9 +201,9 @@
           <div class="col-lg-6">
               <div class="view__item mb-25 wow fadeInDown" data-wow-delay=".2s">
                   <div class="view__content">
-                      <h3><a class="primary-hover" href="shop-single.html">New to Tote Bags?</a></h3>
+                      <h3><a class="primary-hover" href="#shop">New to Tote Bags?</a></h3>
                       <p>Explore our beginner-friendly tote bag collection, perfect for daily use.</p>
-                      <a class="btn-two" href="shop-single.html"><span>Shop Now</span></a>
+                      <a class="btn-two" href="#shop"><span>Shop Now</span></a>
                   </div>
                   <div class="view__image">
                       <img src="{% static 'images/3.jpg' %}" alt="image">
@@ -211,9 +211,9 @@
               </div>
               <div class="view__item wow fadeInUp" data-wow-delay=".3s">
                   <div class="view__content">
-                      <h3><a class="primary-hover" href="shop-single.html">Premium Handmade Designs</a></h3>
+                      <h3><a class="primary-hover" href="#shop">Premium Handmade Designs</a></h3>
                       <p>Experience handcrafted tote bags made with love and quality materials.</p>
-                      <a class="btn-two" href="shop-single.html"><span>Shop Now</span></a>
+                      <a class="btn-two" href="#shop"><span>Shop Now</span></a>
                   </div>
                   <div class="view__image">
                       <img src="{% static 'images/3.jpg' %}" alt="image">
@@ -224,7 +224,7 @@
   </div>
 </section>
 
-<div class="container mt-3 pt-3">
+<div class="container mt-3 pt-3" id="shop">
   {% include 'base/alert.html' %}
   <!-- Filter Section -->
   <div class="filter-section mb-3">
