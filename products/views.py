@@ -10,32 +10,36 @@ from products.models import Product, SizeVariant, ProductReview, Wishlist
 
 # Create your views here.
 
-def get_product(request, slug):
-    product = get_object_or_404(Product, slug=slug)
-    # sorted_size_variants = product.size_variant.all().order_by('size_name')
-    related_products = list(product.category.products.filter(parent=None).exclude(uid=product.uid))
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Product, ProductReview, Wishlist
+from .forms import ReviewForm
+import random
 
-    # Review product view
+def get_product(request, slug):
+    # Fetch product safely, preventing MultipleObjectsReturned
+    product = Product.objects.filter(slug=slug).first()
+
+    if not product:
+        return render(request, "404.html", status=404)
+
+    # Fetch related products (excluding itself)
+    related_products = list(product.category.products.filter(parent=None).exclude(uid=product.uid))
+    
+    # Limit related products to a maximum of 4
+    if len(related_products) > 4:
+        related_products = random.sample(related_products, 4)
+
+    # Handle user reviews
     review = None
     if request.user.is_authenticated:
-        try:
-            review = ProductReview.objects.filter(product=product, user=request.user).first()
-        except Exception as e:
-            print("No reviews found for this product", str(e))
-            messages.warning(request, "No reviews found for this product")
+        review = ProductReview.objects.filter(product=product, user=request.user).first()
 
-    rating_percentage = 0
-    if product.reviews.exists():
-        rating_percentage = (product.get_rating() / 5) * 100
+    rating_percentage = (product.get_rating() / 5) * 100 if product.reviews.exists() else 0
 
+    # Handle review submission
     if request.method == 'POST' and request.user.is_authenticated:
-        if review:
-            # If review exists, update it
-            review_form = ReviewForm(request.POST, instance=review)
-        else:
-            # Otherwise, create a new review
-            review_form = ReviewForm(request.POST)
-
+        review_form = ReviewForm(request.POST, instance=review) if review else ReviewForm(request.POST)
         if review_form.is_valid():
             review = review_form.save(commit=False)
             review.product = product
@@ -46,30 +50,19 @@ def get_product(request, slug):
     else:
         review_form = ReviewForm()
 
-    # Related product view
-    if len(related_products) >= 4:
-        related_products = random.sample(related_products, 4)
-
-    in_wishlist = False
-    if request.user.is_authenticated:
-        in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
+    # Check if the product is in the user's wishlist
+    in_wishlist = request.user.is_authenticated and Wishlist.objects.filter(user=request.user, product=product).exists()
 
     context = {
-        'product': product,
-        # 'sorted_size_variants': sorted_size_variants,
-        'related_products': related_products,
-        'review_form': review_form,
-        'rating_percentage': rating_percentage,
-        'in_wishlist': in_wishlist,
+        "product": product,
+        "related_products": related_products,
+        "review_form": review_form,
+        "rating_percentage": rating_percentage,
+        "in_wishlist": in_wishlist,
     }
 
-    # if request.GET.get('size'):
-    #     size = request.GET.get('size')
-    #     price = product.get_product_price_by_size(size)
-    #     context['selected_size'] = size
-    #     context['updated_price'] = price
+    return render(request, "product/product.html", context)
 
-    return render(request, 'product/product.html', context=context)
 
 
 # Product Review view
