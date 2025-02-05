@@ -1,0 +1,296 @@
+// Progress bar area start here ***
+// .experience-progress-wrapper {
+// 	.progress {
+// 		background-color: #ededed;
+// 		height: 10px;
+// 		border-radius: 100px;
+// 		.progress-bar {
+// 			background-color: var(--primary-color);
+// 		}
+// 	}
+// 	span {
+// 		color: var(--primary-color);
+// 		font-size: 14px;
+// 		font-weight: 600;
+// 	}
+// 	.experience-title {
+// 		font-weight: 600;
+// 	}
+// }
+// Progress bar area end here ***
+
+// Preloader area start here ***
+.pace {
+	pointer-events: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	z-index: 99999999999999;
+	position: fixed;
+	margin: auto;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 400px;
+	border: 0px;
+	height: 1px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.05);
+	-webkit-transition: all 1s;
+	-o-transition: all 1s;
+	transition: all 1s;
+	.pace-progress {
+		-webkit-transform: translate3d(0, 0, 0);
+		transform: translate3d(0, 0, 0);
+		max-width: 300px;
+		position: fixed;
+		z-index: 99999999999999;
+		display: block;
+		position: absolute;
+		top: 0;
+		right: 100%;
+		height: 100%;
+		width: 100%;
+		background: var(--primary-color);
+	}
+}
+.pace.pace-inactive {
+	width: 100vw;
+	opacity: 0;
+	.pace-progress {
+		max-width: 100vw;
+	}
+}
+#preloader {
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	position: fixed;
+	z-index: 9999999;
+	&:after {
+		content: "";
+		position: fixed;
+		left: 0;
+		height: 50%;
+		width: 100%;
+		background: var(--black);
+		-webkit-transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		-o-transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		bottom: 0;
+	}
+	&:before {
+		content: "";
+		position: fixed;
+		left: 0;
+		height: 50%;
+		width: 100%;
+		background: var(--black);
+		-webkit-transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		-o-transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+		top: 0;
+	}
+}
+#preloader.isdone {
+	visibility: hidden;
+	-webkit-transition-delay: 1.5s;
+	-o-transition-delay: 1.5s;
+	transition-delay: 1.5s;
+	&:after {
+		height: 0;
+		-webkit-transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		-o-transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		-webkit-transition-delay: 1s;
+		-o-transition-delay: 1s;
+		transition-delay: 1s;
+	}
+	&:before {
+		height: 0;
+		-webkit-transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		-o-transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		transition: all 0.7s cubic-bezier(1, 0, 0.55, 1);
+		-webkit-transition-delay: 1s;
+		-o-transition-delay: 1s;
+		transition-delay: 1s;
+	}
+}
+.loading {
+	position: fixed;
+	width: 100%;
+	text-align: center;
+	left: 50%;
+	top: calc(50% - 40px);
+	-webkit-transform: translateX(-50%) translateY(-50%);
+	-ms-transform: translateX(-50%) translateY(-50%);
+	transform: translateX(-50%) translateY(-50%);
+	font-weight: 400;
+	font-size: 24px;
+	text-transform: lowercase;
+	letter-spacing: 5px;
+	z-index: 9999999999;
+	span {
+		-webkit-animation: loading 1.4s infinite alternate;
+		animation: loading 1.4s infinite alternate;
+		&:nth-child(1) {
+			-webkit-animation-delay: 0s;
+			animation-delay: 0s;
+		}
+		&:nth-child(2) {
+			-webkit-animation-delay: 0.1s;
+			animation-delay: 0.1s;
+		}
+		&:nth-child(3) {
+			-webkit-animation-delay: 0.2s;
+			animation-delay: 0.2s;
+		}
+		&:nth-child(4) {
+			-webkit-animation-delay: 0.3s;
+			animation-delay: 0.3s;
+		}
+		&:nth-child(5) {
+			-webkit-animation-delay: 0.4s;
+			animation-delay: 0.4s;
+		}
+		&:nth-child(6) {
+			-webkit-animation-delay: 0.5s;
+			animation-delay: 0.5s;
+		}
+		&:nth-child(7) {
+			-webkit-animation-delay: 0.6s;
+			animation-delay: 0.6s;
+		}
+	}
+}
+.loading.isdone {
+	top: 50%;
+	opacity: 0;
+	-webkit-transition: all 0.8s;
+	-o-transition: all 0.8s;
+	transition: all 0.8s;
+	-webkit-transition-delay: 0.5s;
+	-o-transition-delay: 0.5s;
+	transition-delay: 0.5s;
+}
+
+@-webkit-keyframes loading {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes loading {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+// Preloader area end here ***
+
+// Mouse cursor area start here ***
+.mouse-cursor {
+	position: fixed;
+	left: 0;
+	top: 0;
+	pointer-events: none;
+	border-radius: 50%;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+	visibility: hidden;
+}
+.cursor-inner {
+	width: 6px;
+	height: 6px;
+	z-index: 10000001;
+	background-color: var(--primary-color);
+	-webkit-transition: width 0.3s ease-in-out, height 0.3s ease-in-out,
+		margin 0.3s ease-in-out, opacity 0.3s ease-in-out;
+	-o-transition: width 0.3s ease-in-out, height 0.3s ease-in-out,
+		margin 0.3s ease-in-out, opacity 0.3s ease-in-out;
+	transition: width 0.3s ease-in-out, height 0.3s ease-in-out,
+		margin 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+.cursor-inner.cursor-hover {
+	margin-left: -35px;
+	margin-top: -35px;
+	width: 70px;
+	height: 70px;
+	background-color: var(--primary-color);
+	opacity: 0.3;
+}
+.cursor-outer {
+	margin-left: -12px;
+	margin-top: -12px;
+	width: 30px;
+	height: 30px;
+	border: 1px solid var(--primary-color);
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	z-index: 10000000;
+	opacity: 0.5;
+	-webkit-transition: all 0.08s ease-out;
+	-o-transition: all 0.08s ease-out;
+	transition: all 0.08s ease-out;
+}
+.cursor-outer.cursor-hover {
+	opacity: 0;
+}
+// Mouse cursor area end here ***
+
+// Back to top button area start here ***
+.scroll-up {
+	cursor: pointer;
+	display: block;
+	border-radius: 50px;
+	box-shadow: inset 0 0 0 2px var(--border);
+	z-index: 99;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(15px);
+	position: fixed;
+	right: 25px;
+	bottom: 35px;
+	height: 50px;
+	width: 50px;
+	transition: var(--transition);
+	&::after {
+		position: absolute;
+		font-family: "Font Awesome 6 Pro";
+		content: "\f106";
+		text-align: center;
+		line-height: 50px;
+		font-weight: 700;
+		font-size: 18px;
+		color: var(--primary-color);
+		left: 0;
+		top: 0;
+		height: 50px;
+		width: 50px;
+		cursor: pointer;
+		display: block;
+		z-index: 1;
+		transition: var(--transition);
+	}
+	svg path {
+		fill: none;
+	}
+	svg.scroll-circle path {
+		stroke: var(--primary-color);
+		stroke-width: 4px;
+		box-sizing: border-box;
+		transition: var(--transition);
+	}
+}
+.scroll-up.active-scroll {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+// Back to top button area end here ***

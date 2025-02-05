@@ -1,0 +1,77 @@
+// Footer area start here ***
+.footer {
+	&-area {
+		overflow: hidden;
+	}
+	&__item {
+		.footer-title {
+			margin-bottom: 25px;
+		}
+		ul {
+			li {
+				&:not(:last-child) {
+					margin-bottom: 6px;
+				}
+				span {
+					display: inline-block;
+					@include radius(10px, 10px, 10px);
+					border: var(--border-1px);
+					margin-right: 6px;
+					transition: var(--transition);
+				}
+				a {
+					font-size: 14px;
+					color: var(--footer-color);
+					font-weight: 500;
+					&:hover {
+						color: var(--primary-color);
+						span {
+							border: 1px solid var(--primary-color);
+						}
+					}
+				}
+			}
+		}
+	}
+	&__item.newsletter {
+		.subscribe {
+			position: relative;
+			input {
+				width: 100%;
+				background-color: var(--sub-bg);
+				padding: 16px 24px;
+				border-radius: 100px;
+				border: var(--border-1px);
+				color: var(--white);
+				&::placeholder {
+					font-size: 14px;
+					color: var(--footer-color);
+				}
+			}
+			button {
+				color: var(--white);
+				@include radius(50px, 50px, 50px);
+				background-color: var(--primary-color);
+				font-size: 17px;
+				position: absolute;
+				top: 6px;
+				right: 6px;
+			}
+		}
+	}
+	&__copy-text {
+		@include justify-wrp;
+		p {
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--footer-color);
+			a {
+				color: var(--footer-color);
+			}
+		}
+		.payment {
+			max-width: 275px;
+		}
+	}
+}
+// Footer area end here ***

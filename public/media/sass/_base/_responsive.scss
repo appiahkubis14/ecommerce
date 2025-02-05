@@ -1,0 +1,288 @@
+// Global responsive area start here ***
+@media screen and (max-width: 991px) {
+	br {
+		display: none;
+	}
+}
+@media screen and (max-width: 767px) {
+	.section-header {
+		h2 {
+			font-size: 28px;
+			line-height: 40px;
+		}
+	}
+	.pt-130 {
+		padding-top: 65px;
+	}
+	.pb-130 {
+		padding-bottom: 65px;
+	}
+}
+@media screen and (max-width: 470px) {
+	.nav-pills {
+		.nav-item {
+			.nav-link {
+				padding: 0 5px !important;
+				font-size: 12px;
+			}
+			.nav-link.active {
+				&::after {
+					display: none;
+				}
+			}
+		}
+	}
+}
+@media screen and (max-width: 375px) {
+	.section-header {
+		h2 {
+			font-size: 18px;
+			line-height: 30px;
+		}
+	}
+}
+// Global responsive area end here ***
+
+// Header responsive area start here ***
+
+// Header responsive area end here ***
+
+// Banner responsive area start here ***
+@media screen and (max-width: 991px) {
+	.banner-area {
+		.product__dot {
+			text-align: center;
+		}
+	}
+	.banner-two {
+		&__content {
+			h4 {
+				font-weight: 600;
+				font-size: 16px;
+				color: var(--white);
+				margin-bottom: 30px;
+			}
+			h1 {
+				color: var(--white);
+				font-size: 60px;
+				line-height: 74px;
+			}
+			p {
+				font-weight: 500;
+			}
+			.banner-two__info {
+				span {
+					color: var(--border-light);
+					font-weight: 500;
+					font-size: 14px;
+				}
+			}
+		}
+	}
+	.ad-banner {
+		&__content.left {
+			margin-left: 0%;
+			padding-left: 65px;
+		}
+		&__item {
+			margin-bottom: 30px;
+		}
+	}
+}
+@media screen and (max-width: 767px) {
+	.banner {
+		&-area {
+			padding-top: 250px;
+		}
+	}
+	.banner-two {
+		&__arry-btn {
+			display: none;
+		}
+		&__content {
+			h4 {
+				font-weight: 600;
+				font-size: 16px;
+				color: var(--white);
+				margin-bottom: 15px;
+			}
+			h1 {
+				color: var(--white);
+				font-size: 30px;
+				line-height: 40px;
+			}
+			p {
+				font-weight: 400;
+				font-size: 14px;
+				margin-top: 20px;
+			}
+			.btn-wrp {
+				margin-top: 30px;
+			}
+		}
+	}
+}
+@media screen and (max-width: 575px) {
+	.banner {
+		&-area {
+			padding-top: 200px;
+		}
+	}
+}
+
+@media screen and (max-width: 424px) {
+	.banner {
+		&__content {
+			h5 {
+				margin-bottom: 15px;
+			}
+			h1 {
+				font-size: 28px;
+				line-height: 40px;
+			}
+			.btn-one {
+				margin-top: 20px;
+			}
+		}
+	}
+	.banner-two {
+		.btn-wrp {
+			a {
+				padding: 5px 15px;
+			}
+		}
+	}
+	.ad-banner {
+		&__content {
+			padding-left: 20px;
+		}
+		&__content.left {
+			padding-left: 20px;
+		}
+	}
+}
+@media screen and (max-width: 424px) {
+	.page-banner {
+		h2 {
+			font-size: 30px;
+			line-height: 30px;
+		}
+	}
+}
+// Banner responsive area end here ***
+
+// All section responsive area end here ***
+@media screen and (max-width: 1399px) {
+	.gallery {
+		&__content {
+			bottom: 30px;
+			left: 30px;
+		}
+		&__item {
+			.off-tag {
+				top: 30px;
+				left: 30px;
+			}
+		}
+	}
+	.testimonial__image {
+		&::after {
+			display: none;
+		}
+	}
+}
+@media screen and (max-width: 767px) {
+	.gallery {
+		&__item {
+			padding: 0 15px;
+		}
+	}
+	.product {
+		&__content {
+			text-align: center;
+		}
+	}
+	.get-now {
+		&__image {
+			background-color: var(--black);
+		}
+	}
+}
+@media screen and (max-width: 575px) {
+	.shop-page-wrp {
+		flex-direction: column;
+		.short {
+			margin-top: 20px;
+		}
+	}
+	.testimonial {
+		.pb-65,
+		.pt-65,
+		.pl-65,
+		.pr-65,
+		.pr-55 {
+			padding: 10px;
+		}
+		&__item {
+			p {
+				font-size: 18px;
+				line-height: 25px;
+			}
+		}
+	}
+	.login {
+		&__item {
+			padding: 20px;
+		}
+		&__content {
+			h2 {
+				font-size: 30px;
+				margin-bottom: 10px;
+			}
+		}
+		&__image {
+			.btn-wrp {
+				right: -90px;
+			}
+		}
+	}
+}
+@media screen and (max-width: 424px) {
+	.blog-list {
+		.container-fluid {
+			padding: 0 20px;
+		}
+	}
+	.get-now {
+		&__image {
+			height: 400px;
+			line-height: 400px;
+		}
+	}
+	.discount {
+		&__item {
+			.off-btn {
+				padding: 10px 4px;
+				font-size: 12px;
+				img {
+					margin-right: 3px;
+				}
+			}
+		}
+	}
+}
+// All section responsive area end here ***
+
+// Footer responsive area start here ***
+@media screen and (max-width: 991px) {
+	.footer {
+		&__copy-text {
+			flex-direction: column;
+			p {
+				margin: 15px 0;
+			}
+			padding: 30px 0;
+		}
+	}
+}
+// Footer responsive area end here ***

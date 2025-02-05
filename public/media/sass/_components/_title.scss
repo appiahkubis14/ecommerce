@@ -1,0 +1,63 @@
+// Section header area start here ***
+.section-header {
+	.section-title-icon {
+		position: relative;
+		span {
+			position: absolute;
+			left: -30px;
+			top: 10px;
+		}
+	}
+}
+// Section header area end here ***
+
+// Shop header area start here ***
+.short {
+	.nice-select {
+		border-radius: 6px;
+		border: var(--border-1px);
+		background-color: var(--black);
+		.list {
+			background-color: var(--black);
+			border: var(--border-1px);
+			.option.selected {
+				background-color: var(--black);
+				font-weight: normal;
+			}
+			li {
+				&:hover {
+					background-color: var(--black);
+					color: var(--primary-color);
+				}
+			}
+		}
+	}
+}
+// Shop header area end here ***
+
+// Title icon area start here ***
+.title-icon {
+	width: 21px;
+	height: 14px;
+	position: relative;
+	&::before {
+		content: "";
+		position: absolute;
+		@include radius(14px, 14px, 14px);
+		background-color: var(--primary-color);
+		border: 2px solid var(--primary-color);
+		top: 0;
+		left: 0;
+		animation: moveLeft 3s linear infinite;
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		@include radius(14px, 14px, 14px);
+		border: 2px solid var(--primary-color);
+		top: 0;
+		right: 0;
+		animation: moveRight 3s linear infinite;
+	}
+}
+// Title icon area end here ***

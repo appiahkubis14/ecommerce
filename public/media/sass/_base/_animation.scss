@@ -1,0 +1,59 @@
+//  Video button animation area start here ***
+
+//  Video button animation area end here ***
+
+//  Title icon animation area start here ***
+@keyframes moveLeft {
+	0% {
+		transform: translateX(0);
+	}
+
+	50% {
+		transform: translateX(7px);
+	}
+
+	100% {
+		transform: translateX(0);
+	}
+}
+
+@keyframes moveRight {
+	0% {
+		transform: translateX(0);
+	}
+
+	50% {
+		transform: translateX(-7px);
+	}
+
+	100% {
+		transform: translateX(0);
+	}
+}
+//  Title icon animation area end here ***
+
+//  Sway animation start here ***
+@keyframes sway {
+	0% {
+		transform: translateX(-10px);
+	}
+	100% {
+		transform: translateX(10px);
+	}
+}
+.sway__animation {
+	animation: sway 5s linear infinite alternate;
+}
+
+@keyframes sway_Y {
+	0% {
+		transform: translateY(-10px);
+	}
+	100% {
+		transform: translateY(10px);
+	}
+}
+.sway_Y__animation {
+	animation: sway_Y 5s linear infinite alternate;
+}
+//  Sway animation end here ***

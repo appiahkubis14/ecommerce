@@ -1,0 +1,380 @@
+// Button one area start here ***
+.btn-one {
+	display: inline-block;
+	vertical-align: middle;
+	background-color: var(--primary-color);
+	color: var(--white);
+	font-size: 14px;
+	font-weight: 600;
+	padding: 12px 30px;
+	transition: var(--transition);
+	text-transform: capitalize;
+	position: relative;
+	overflow: hidden;
+	text-align: center;
+	border-radius: 100px;
+	&:hover {
+		color: var(--primary-color);
+		background-color: var(--white);
+		&::before {
+			top: 100%;
+		}
+		&::after {
+			bottom: -50%;
+		}
+	}
+	&::before {
+		content: "";
+		position: absolute;
+		top: -50%;
+		left: 50%;
+		transform: translateX(-50%);
+		height: 150%;
+		border-top-left-radius: 50%;
+		border-top-right-radius: 50%;
+		background-color: var(--black);
+		transition: 700ms cubic-bezier(0.52, 1.64, 0.37, 0.66);
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 150%;
+		height: 150%;
+		border-bottom-left-radius: 50%;
+		border-bottom-right-radius: 50%;
+		background-color: var(--white);
+		transition-duration: 700ms;
+		transition-timing-function: cubic-bezier(0.52, 1.64, 0.37, 0.66);
+	}
+	span {
+		position: relative;
+		color: inherit;
+		z-index: 2;
+	}
+}
+// Button one area start here ***
+
+// Button one light area start here ***
+.btn-one-light {
+	@extend .btn-one;
+	background-color: var(--white);
+	color: var(--primary-color);
+	&:hover {
+		color: var(--white);
+	}
+	&::after {
+		background-color: var(--primary-color);
+	}
+}
+// Button one light area end here ***
+
+// Button two area start here ***
+.btn-two {
+	@extend .btn-one-light;
+}
+// Button two area end here ***
+
+// Dots area start here ***
+.dot {
+	.swiper-pagination-bullet {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		transition: 0.6s;
+		background-color: transparent;
+		opacity: 1;
+		position: relative;
+		border: 1px solid transparent;
+		&::before {
+			position: absolute;
+			content: "";
+			top: 5px;
+			left: 5px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background-color: #858585;
+			transition: 0.6s;
+		}
+	}
+	.swiper-pagination-bullet.swiper-pagination-bullet-active {
+		&::before {
+			background-color: var(--primary-color);
+		}
+		border: 1px solid var(--primary-color);
+	}
+}
+.dot-light {
+	@extend.dot;
+	.swiper-pagination-bullet {
+		background-color: transparent;
+		border: 1px solid transparent;
+		&::before {
+			background-color: var(--white);
+		}
+	}
+	.swiper-pagination-bullet.swiper-pagination-bullet-active {
+		&::before {
+			background-color: var(--white);
+		}
+		border: 1px solid var(--white);
+	}
+}
+// Dots area end here ***
+
+// Pagi button area start here ***
+.pagi-btn {
+	@include radius(50px, 50px, 50px);
+	border: var(--border-1px);
+	&:hover {
+		color: var(--primary-color);
+		border: 1px solid var(--primary-color);
+	}
+}
+.pagi-btn.active {
+	color: var(--primary-color);
+	border: 1px solid var(--primary-color);
+}
+// Pagi button area end here ***\
+
+// Social icon area start here ***
+.social-icon {
+	a {
+		@include radius(40px, 40px, 40px);
+		color: var(--footer-color);
+		border: var(--border-1px);
+		&:hover {
+			color: var(--primary-color);
+			border: 1px solid var(--primary-color);
+		}
+	}
+}
+// Social icon area end here ***
+
+// Arry button area start here ***
+.arry-btn {
+	button {
+		text-align: center;
+		width: 60px;
+		height: 60px;
+		line-height: 60px;
+		font-size: 24px;
+		border-radius: 50%;
+		border: 1px solid var(--border);
+		color: var(--border);
+		transition: var(--transition);
+		&:hover {
+			background-color: var(--primary-color);
+			color: var(--white);
+			border: 1px solid var(--primary-color);
+		}
+	}
+	.active {
+		background-color: var(--primary-color);
+		color: var(--white);
+		border: 1px solid var(--primary-color);
+	}
+}
+.arry-prev {
+	text-align: center;
+	width: 50px;
+	height: 50px;
+	line-height: 50px;
+	font-size: 18px;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	color: var(--border);
+	transition: var(--transition);
+	&:hover {
+		background-color: var(--primary-color);
+		color: var(--white);
+		border: 1px solid var(--primary-color);
+	}
+}
+.arry-next {
+	text-align: center;
+	width: 50px;
+	height: 50px;
+	line-height: 50px;
+	font-size: 18px;
+	border-radius: 50%;
+	transition: var(--transition);
+	background-color: var(--primary-color);
+	color: var(--white);
+	border: 1px solid var(--primary-color);
+}
+// Arry button area end here ***
+
+// Tab button area start here ***
+.nav-pills {
+	.nav-item {
+		.nav-link {
+			font-size: 14px;
+			padding: 0;
+			background-color: transparent;
+			border-radius: 0px;
+			line-height: 12px;
+			font-weight: 600;
+			color: var(--footer-color);
+			transition: var(--transition);
+			&:hover {
+				color: var(--white);
+			}
+		}
+		.nav-link.active {
+			color: var(--white);
+			position: relative;
+			&::after {
+				position: absolute;
+				content: "";
+				left: 10px;
+				top: 3px;
+				width: 6px;
+				height: 6px;
+				border-radius: 50%;
+				background-color: var(--primary-color);
+			}
+		}
+	}
+}
+// Tab button area end here ***
+
+// Off button area start here ***
+.off-btn {
+	border: var(--border-1px);
+	padding: 10px 18px;
+	border-radius: 100px;
+	font-weight: 600;
+}
+// Off button area start here ***
+
+// Off tag area start here ***
+.off-tag {
+	@include radius(80px, 80px, 80px);
+	background-color: var(--white);
+	color: var(--primary-color);
+	font-size: 19px;
+	font-weight: 600;
+	line-height: 25px;
+	text-align: center;
+	text-transform: uppercase;
+	padding-top: 15px;
+}
+// Off tag area end here ***
+
+// Video button area start here ***
+.video__btn-wrp {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+.video-btn {
+	position: relative;
+	text-align: center;
+	display: inline-block;
+	z-index: 2;
+	a {
+		position: relative;
+		color: var(--primary-color);
+		font-size: 28px;
+		z-index: 1;
+		background-color: #ffffffcc;
+		width: 90px;
+		height: 90px;
+		line-height: 90px;
+		border-radius: 50%;
+		display: block;
+		transition: 0.4s;
+	}
+}
+.video-pulse::after,
+.video-pulse::before {
+	position: absolute;
+	content: "";
+	width: 100%;
+	height: 100%;
+	border: 1px solid var(--white);
+	opacity: 0.7;
+	left: 0;
+	top: 0;
+	border-radius: 50%;
+	-webkit-animation-duration: 2.5s;
+	animation-duration: 2.5s;
+	-webkit-animation-timing-function: linear;
+	animation-timing-function: linear;
+	-webkit-animation-name: video-animation;
+	animation-name: video-animation;
+	-webkit-animation-iteration-count: infinite;
+	animation-iteration-count: infinite;
+}
+.video-pulse::before {
+	-webkit-animation-delay: 1s;
+	animation-delay: 1s;
+}
+@-webkit-keyframes video-animation {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.5);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(2);
+	}
+}
+
+@keyframes video-animation {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.5);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(2);
+	}
+}
+// Video button area end here ***
+
+// Radio button area start here ***
+.radio-btn {
+	display: flex;
+	align-items: center;
+	p {
+		color: var(--span);
+		margin-left: 10px;
+		font-size: 14px;
+	}
+	span {
+		width: 20px;
+		height: 20px;
+		border: 1px solid var(--primary-color);
+		border-radius: 50%;
+		position: relative;
+		cursor: pointer;
+		&::after {
+			position: absolute;
+			content: "";
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background-color: var(--primary-color);
+			top: 6px;
+			left: 6px;
+		}
+	}
+	.radio-btn-active {
+		border: 1px solid var(--primary-color);
+		background-color: var(--primary-color);
+		&::after {
+			background-color: var(--white);
+		}
+	}
+}
+// Radio button area end here ***
