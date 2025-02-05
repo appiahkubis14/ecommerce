@@ -20,7 +20,7 @@ class SizeVariantAdmin(admin.ModelAdmin):
 # Register Product Image Model (Inline for Product)
 class ProductImageAdmin(admin.StackedInline):
     model = ProductImage
-    fields = ['product', 'image', 'img_preview']  # Include the image preview in the inline form
+    fields = ['product', 'image', ]  # Include the image preview in the inline form
 
 # Register Product Model
 @admin.register(Product)
@@ -31,8 +31,8 @@ class ProductAdmin(admin.ModelAdmin):
 # Register Product Image Model
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ['product', 'img_preview', 'image', 'created_at', 'updated_at']  # Show image preview
-    readonly_fields = ['img_preview']  # Optionally, you can make the preview read-only in the edit form
+    list_display = ['product', 'image', 'created_at', 'updated_at']  # Show image preview
+    
 
 # Register ProductReview Model
 @admin.register(ProductReview)
