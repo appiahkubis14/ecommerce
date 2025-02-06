@@ -1,6 +1,5 @@
-{% extends 'base/base.html' %} 
-{% block title %}Order History{% endblock title %} 
-{% load static %} {% block start %}
+{% extends 'base/base.html' %} {% block title %}Order History{% endblock title
+%} {% load static %} {% block start %}
 
 <div class="container mt-4">
   <h3 class="form-group mb-4">Order History</h3>
@@ -19,22 +18,25 @@
       <tbody>
         {% for order in orders %}
         <tr>
-            <td>{{ order.order_id }}</td>
-            <td>{{ order.order_date|date:"F j, Y" }}</td>
-            <td>
-                <span
-                class="badge {% if order.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %}"
-                >
-                {{ order.payment_status }}
-                </span>
-            </td>
-            <td>₵{{ order.grand_total }}</td>
-            <td>{{ order.payment_mode }}</td>
-            <td>
-                <a href="{% url 'order_details' order.order_id %}" class="btn btn-outline-primary btn-sm">
-                View Details
-                </a>
-            </td>
+          <td>{{ order.order_id }}</td>
+          <td>{{ order.order_date|date:"F j, Y" }}</td>
+          <td>
+            <span
+              class="badge {% if order.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %}"
+            >
+              {{ order.payment_status }}
+            </span>
+          </td>
+          <td>₵{{ order.grand_total }}</td>
+          <td>{{ order.payment_mode }}</td>
+          <td>
+            <a
+              href="{% url 'order_details' order.order_id %}"
+              class="btn btn-outline-primary btn-sm"
+            >
+              View Details
+            </a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>

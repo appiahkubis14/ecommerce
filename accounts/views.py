@@ -23,6 +23,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import redirect, render, get_object_or_404
 from accounts.forms import UserUpdateForm, UserProfileForm, ShippingAddressForm, CustomPasswordChangeForm
 from .utils import Paystack
+import requests
 
 # Create your views here.
 
@@ -153,6 +154,8 @@ def cart(request):
     return render(request, 'accounts/cart.html', context)
 
 
+
+
 @login_required
 def initialize_payment(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -177,49 +180,93 @@ def initialize_payment(request, order_id):
         return JsonResponse({'error': 'Payment initialization failed'}, status=400)
 
 
-# @csrf_exempt
+
 def verify_payment(request):
     reference = request.GET.get('reference')
     if not reference:
         return JsonResponse({'error': 'Missing payment reference'}, status=400)
 
-    paystack = Paystack()
-    response = paystack.verify_payment(reference)
+    # Verify payment with Paystack
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    response = requests.get(url, headers=headers)
+    response_data = response.json()
 
-    if response['status']:
+    if response_data.get("status"):
         try:
-            payment = Payment.objects.get(reference=reference)
-        except Payment.DoesNotExist:
-            return JsonResponse({'error': 'Payment record not found'}, status=404)
-
-        payment.payment_status = 'Completed'
-        payment.save()
+            order = Order.objects.get(transaction_ref=reference)  # Adjust field name if different
+        except Order.DoesNotExist:
+            return JsonResponse({'error': 'Order not found'}, status=404)
 
         # Update order status
-        payment.order.status = 'Completed'
-        payment.order.save()
+        order.status = 'Completed'
+        order.payment_status = 'Paid'
+        order.save()
 
-        return JsonResponse({'message': 'Payment successful'}, status=200)
-    else:
-        return JsonResponse({'error': 'Payment verification failed'}, status=400)
+        # Fetch order details
+        ordered_items = order.items.all().values(
+            "product__product_name",
+            "quantity",
+            "price"
+        )
+
+        return JsonResponse({
+            'message': 'Payment successful',
+            'order_id': order.id,
+            'total_price': order.total_price,
+            'grand_total': order.get_grand_total(),  # Ensure method exists in your model
+            'payment_mode': 'Paystack',
+            'ordered_items': list(ordered_items),
+        }, status=200)
+
+    return JsonResponse({'error': 'Payment verification failed'}, status=400)
 
 
+@login_required
 def process_payment(request):
     if request.method == "POST":
-        # Get payment method from the form
-        payment_method = request.POST.get("payment_method")
-        
-        if payment_method in ["bank_transfer", "check_payment", "cash_on_delivery"]:
-            # Simulate payment processing (replace with actual logic)
-            request.session['payment_completed'] = True
-            return redirect('checkout')  # Redirect to the checkout or order confirmation page
-        else:
-            # Handle invalid payment method
-            return render(request, 'checkout.html', {"error": "Invalid payment method"})
-    
-    # If not a POST request, redirect to the checkout page
-    return redirect('checkout')
+        user = request.user
+        cart = Cart.objects.get(user=user)
 
+        # Ensure the cart has items
+        if not cart.cart_items.exists():
+            messages.error(request, "Your cart is empty.")
+            return redirect("cart")
+
+        # Generate unique order ID (or use a payment gateway response)
+        import uuid
+        order_id = str(uuid.uuid4())[:10]
+
+        # Create Order
+        order = Order.objects.create(
+            user=user,
+            order_id=order_id,
+            payment_status="Paid",  # Assuming payment success
+            shipping_address=user.profile.address,  # Modify as needed
+            payment_mode="Credit Card",  # Modify based on actual payment mode
+            order_total_price=cart.get_total_price(),
+            grand_total=cart.get_total_price(),
+        )
+
+        # Move items from cart to order
+        for cart_item in cart.cart_items.all():
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                product_price=cart_item.get_product_price(),
+            )
+
+        # Clear the cart
+        cart.cart_items.all().delete()
+
+        messages.success(request, "Your order has been placed successfully!")
+        return redirect("order_history")  # Redirect to orders page
+
+    return redirect("cart")
 
 
 
