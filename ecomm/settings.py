@@ -231,23 +231,7 @@ RAZORPAY_SECRET_KEY = ''
 
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://gbekearthub.com",
-]
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-]
-CORS_ALLOW_HEADERS = [
-    "content-type",
-    "authorization",
-    "x-custom-header",
-]
+
 
 
 # Auth Backends Configurations
