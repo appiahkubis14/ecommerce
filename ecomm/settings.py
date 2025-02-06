@@ -30,6 +30,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 PAYSTACK_SECRET_KEY = ''
 
+
+
 # Application definition
 
 SITE_ID = 2
@@ -45,7 +47,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     
     "colorfield",
-    # Apps
+    'corsheaders',
     'products',
     'accounts',
     'home',
@@ -109,6 +111,8 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add this line
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -225,6 +229,27 @@ EMAIL_USE_SSL = False
 # RazorPay API KEYS
 RAZORPAY_KEY_ID = ''
 RAZORPAY_SECRET_KEY = ''
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://gbekearthub.com",
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-custom-header",
+]
+
 
 # Auth Backends Configurations
 AUTHENTICATION_BACKENDS = (
