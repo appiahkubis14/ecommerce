@@ -38,11 +38,11 @@ class Profile(BaseModel):
         
 class Cart(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart", null=True, blank=True)
-    # coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     is_paid = models.BooleanField(default=False)
-    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
-    razorpay_payment_id = models.CharField(max_length=100, null=True, blank=True)
-    razorpay_payment_signature = models.CharField(max_length=100, null=True, blank=True)
+    
+    # Paystack fields
+    paystack_reference = models.CharField(max_length=100, null=True, blank=True)
+    paystack_status = models.CharField(max_length=100, null=True, blank=True)
 
     def get_cart_total(self):
         cart_items = self.cart_items.all()
@@ -52,16 +52,6 @@ class Cart(BaseModel):
             total_price += cart_item.get_product_price()
 
         return total_price
-
-
-    # def get_cart_total_price_after_coupon(self):
-    #     total = self.get_cart_total()
-
-        # if self.coupon and total >= self.coupon.minimum_amount:
-        #     total -= self.coupon.discount_amount
-                    
-        # return total
-
 
 
 class CartItem(BaseModel):
@@ -84,8 +74,11 @@ class Order(BaseModel):
     shipping_address = models.TextField(blank=True, null=True)
     payment_mode = models.CharField(max_length=100)
     order_total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    # coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
-    grand_total = models.DecimalField(max_digits=10, decimal_places=2)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+
+    # Paystack Fields
+    paystack_reference = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     def __str__(self):
         return f"Order {self.order_id} by {self.user.username}"
@@ -97,7 +90,6 @@ class Order(BaseModel):
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-   
     quantity = models.PositiveIntegerField(default=1)
     product_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
