@@ -24,6 +24,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from accounts.forms import UserUpdateForm, UserProfileForm, ShippingAddressForm, CustomPasswordChangeForm
 from .utils import Paystack
 import requests
+from django.http import HttpResponseNotFound
 
 # Create your views here.
 
@@ -148,81 +149,60 @@ def cart(request):
         return redirect(reverse('index'))
 
     if cart_obj:
-        cart_total_in_paise = cart_obj.get_cart_total()
+        cart_total_in_paise = cart_obj.get_cart_total()  # Cart total
+        payment_reference = str(uuid.uuid4())  # Generate unique reference
 
-    context = {'cart': cart_obj, 'quantity_range': range(1, 6)}
+    context = {
+        'cart': cart_obj,
+        'quantity_range': range(1, 11),
+        'payment_reference': payment_reference  # Pass reference to template
+    }
     return render(request, 'accounts/cart.html', context)
 
 
 
 
-@login_required
-def initialize_payment(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+def initiate_payment(request):
+    cart = get_object_or_404(Cart, user=request.user, is_paid=False)
+    payment_reference = str(uuid.uuid4())  # Generate a unique reference
+    
+    cart.paystack_reference = payment_reference  # Save it in the cart
+    cart.save()
 
-    paystack = Paystack()
-    email = request.user.email
-    amount = int(order.total_price * 100)  # Convert to kobo if using Paystack (e.g., GHS)
-
-    response = paystack.initialize_payment(email, amount)
-
-    if response['status']:
-        payment = payment.objects.create(
-            order=order,
-            user=request.user,
-            amount=order.total_price,
-            payment_method='Paystack',
-            reference=response['data']['reference'],
-            payment_status='Pending',
-        )
-        return redirect(response['data']['authorization_url'])
-    else:
-        return JsonResponse({'error': 'Payment initialization failed'}, status=400)
+    return JsonResponse({"payment_reference": payment_reference})
 
 
 
-def verify_payment(request):
-    reference = request.GET.get('reference')
+def verify_paystack_payment(request):
+    reference = request.GET.get("paystack_reference")
     if not reference:
-        return JsonResponse({'error': 'Missing payment reference'}, status=400)
+        return JsonResponse({"error": "No reference provided"}, status=400)
 
-    # Verify payment with Paystack
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json",
     }
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    
     response = requests.get(url, headers=headers)
     response_data = response.json()
 
-    if response_data.get("status"):
-        try:
-            order = Order.objects.get(transaction_ref=reference)  # Adjust field name if different
-        except Order.DoesNotExist:
-            return JsonResponse({'error': 'Order not found'}, status=404)
-
-        # Update order status
-        order.status = 'Completed'
-        order.payment_status = 'Paid'
+    if response_data["status"] and response_data["data"]["status"] == "success":
+        # Mark order as paid
+        order = Order.objects.get(paystack_reference=reference)
+        order.payment_status = "Paid"
         order.save()
 
-        # Fetch order details
-        ordered_items = order.items.all().values(
-            "product__product_name",
-            "quantity",
-            "price"
-        )
+        # Mark cart as paid
+        cart = Cart.objects.get(user=order.user)
+        cart.is_paid = True
+        cart.paystack_reference = reference
+        cart.paystack_status = "success"
+        cart.save()
 
-        return JsonResponse({
-            'message': 'Payment successful',
-            'order_id': order.id,
-            'total_price': order.total_price,
-            'grand_total': order.get_grand_total(),  # Ensure method exists in your model
-            'payment_mode': 'Paystack',
-            'ordered_items': list(ordered_items),
-        }, status=200)
-
-    return JsonResponse({'error': 'Payment verification failed'}, status=400)
+        return redirect("payment_success")
+    else:
+        return redirect("payment_failed")
 
 
 @login_required
@@ -314,15 +294,17 @@ def remove_coupon(request, cart_id):
 # Payment success view
 def success(request):
     order_id = request.GET.get('order_id')
-    cart = get_object_or_404(Cart, razorpay_order_id=order_id)
 
+    if not order_id:
+        return HttpResponseNotFound("Order ID is missing.")
+
+    cart = get_object_or_404(Cart, paystack_reference=order_id)
     # Mark the cart as paid
     cart.is_paid = True
     cart.save()
 
     # Create the order after payment is confirmed
     order = create_order(cart)
-
     context = {'order_id': order_id, 'order': order}
     return render(request, 'payment_success/payment_success.html', context)
 
@@ -437,15 +419,25 @@ def order_history(request):
 
 # Create an order view
 def create_order(cart):
+    """
+    Creates an order from a cart after successful payment.
+    Ensures grand_total is always provided.
+    """
+    # Get order total price from cart
+    order_total = cart.get_cart_total()
+
+    # Compute grand_total (considering discounts or taxes)
+    # Replace this with actual calculations if you have coupons, shipping fees, etc.
+    grand_total = order_total  # Modify this if discounts or additional charges apply
+
     order, created = Order.objects.get_or_create(
         user=cart.user,
-        order_id=cart.razorpay_order_id,
+        order_id=cart.paystack_reference,  # Use the Paystack reference for order tracking
         payment_status="Paid",
-        shipping_address=cart.user.profile.shipping_address,
+        shipping_address=cart.user.profile.shipping_address if cart.user.profile else "",
         payment_mode="Paystack",
-        order_total_price=cart.get_cart_total(),
-        # coupon=cart.coupon,
-        # grand_total=cart.get_cart_total_price_after_coupon(),
+        order_total_price=order_total,
+        grand_total=grand_total,  # Ensure grand_total is included
     )
 
     # Create OrderItem instances for each item in the cart
@@ -454,8 +446,6 @@ def create_order(cart):
         OrderItem.objects.get_or_create(
             order=order,
             product=cart_item.product,
-            # size_variant=cart_item.size_variant,
-            # color_variant=cart_item.color_variant,
             quantity=cart_item.quantity,
             product_price=cart_item.get_product_price()
         )
@@ -472,7 +462,7 @@ def order_details(request, order_id):
         'order': order,
         'order_items': order_items,
         'order_total_price': sum(item.get_total_price() for item in order_items),
-        'coupon_discount': order.coupon.discount_amount if order.coupon else 0,
+        # 'coupon_discount': order.coupon.discount_amount if order.coupon else 0,
         'grand_total': order.get_order_total_price()
     }
     return render(request, 'accounts/order_details.html', context)

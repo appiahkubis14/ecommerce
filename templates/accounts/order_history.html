@@ -3,42 +3,41 @@
 {% load static %}
 {% block start %}
 
-<div class="container mt-4">
-  <h3 class="form-group mb-4">Order History</h3>
+<div class="container mt-5">
+  <h2 class="mb-4 text-center font-weight-bold">Order History</h2>
   <div class="table-responsive">
-    <table class="table table-striped table-hover text-center">
+    <table class="table table-bordered text-center shadow-lg">
       <thead class="thead-dark">
-        <tr>
-          <th>Order ID #</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Total</th>
-          <th>Payment Mode</th>
-          <th>Action</th>
+        <tr class="bg-dark text-white">
+          <th class="py-3">Order ID #</th>
+          <th class="py-3">Date</th>
+          <th class="py-3">Status</th>
+          <th class="py-3">Total</th>
+          <th class="py-3">Payment Mode</th>
+          <th class="py-3">Action</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="bg-light">
         {% for order in orders %}
-        <tr>
-          <td>{{ order.order_id }}</td>
-          <td>{{ order.order_date|date:"F j, Y" }}</td>
-          <td>
-            <span
-              class="badge {% if order.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %}"
-            >
+        <tr class="align-middle">
+          <td class="py-3 h5 font-weight-bold">{{ order.order_id }}</td>
+          <td class="py-3 h5">{{ order.order_date|date:"F j, Y" }}</td>
+          <td class="py-3">
+            <span class="badge {% if order.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %} px-3 py-2 h5">
               {{ order.payment_status }}
             </span>
           </td>
-          <td>₵{{ order.grand_total }}</td>
-          <td>{{ order.payment_mode }}</td>
-          <td>
-            <a
-              href="{% url 'order_details' order.order_id %}"
-              class="btn btn-outline-primary btn-sm"
-            >
+          <td class="py-3 h5 text-success">₵{{ order.grand_total }}</td>
+          <td class="py-3 h5">{{ order.payment_mode }}</td>
+          <td class="py-3">
+            <a href="{% url 'order_details' order.order_id %}" class="btn btn-outline-primary btn-lg">
               View Details
             </a>
           </td>
+        </tr>            
+        {% empty %}
+        <tr>
+          <td colspan="6" class="py-4 text-muted h4">No orders found.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -47,3 +46,4 @@
 </div>
 
 {% endblock %}
+ 

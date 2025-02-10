@@ -23,31 +23,25 @@
                 <td>
                   <figure class="itemside">
                     <div class="aside">
-                      <img
-                        src="/media/{{ cart_item.product.product_images.first.image }}"
-                        class="img-sm"
-                      />
+                      <img src="/media/{{ cart_item.product.product_images.first.image }}" class="img-sm" />
                     </div>
                     <figcaption class="info">
-                      <a
-                        href="{% url 'get_product' cart_item.product.slug %}"
-                        class="title text-dark"
-                      >
+                      <a href="{% url 'get_product' cart_item.product.slug %}" class="title text-dark">
                         {{ cart_item.product.product_name }}
                       </a>
-                       <p class="text-muted small">
+                      <p class="text-muted small">
                         {% if cart_item.size_variant %}
-                          Size: {{ cart_item.size_variant.size_name }}<br />
+                        Size: {{ cart_item.size_variant.size_name }}<br />
                         {% else %}
-                          Size : N/A <br />
-                        {% endif %} 
+                        Size : N/A <br />
+                        {% endif %}
                         {% if cart_item.product.color_variant.exists %}
-                          {% for color in cart_item.product.color_variant.all %}
-                            Color: {{ color.color_name }}<br />
-                          {% endfor %}
+                        {% for color in cart_item.product.color_variant.all %}
+                        Color: {{ color.color_name }}<br />
+                        {% endfor %}
                         {% else %}
-                          Color: N/A<br />
-                        {% endif %} 
+                        Color: N/A<br />
+                        {% endif %}
                         Brand: Nike
                       </p>
                     </figcaption>
@@ -56,9 +50,13 @@
                 <td>
                   <select class="form-control" onchange="updateCartItem(this, '{{ cart_item.uid }}')">
                     {% for i in quantity_range %}
-                      <option value="{{ i }}" {% if cart_item.quantity == i %}selected{% endif %}>{{ i }}</option>
+                    <option value="{{ i }}" {% if cart_item.quantity|add:0 == i %} selected {% endif %}>
+
+                      {{ i }}
+                    </option>
                     {% endfor %}
                   </select>
+
                 </td>
                 <td>
                   <div class="price-wrap">
@@ -66,13 +64,8 @@
                   </div>
                 </td>
                 <td class="text-right">
-                  <a
-                    data-original-title="Save to Wishlist"
-                    title=""
-                    href=""
-                    class="btn btn-light"
-                    data-toggle="tooltip"
-                  >
+                  <a data-original-title="Save to Wishlist" title="" href="" class="btn btn-light"
+                    data-toggle="tooltip">
                     <i class="fa fa-heart"></i>
                   </a>
                   <a href="{% url 'remove_cart' cart_item.uid %}" class="btn btn-danger">
@@ -111,12 +104,7 @@
               <div class="form-group">
                 <label>Have coupon?</label>
                 <div class="input-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="coupon"
-                    placeholder="Coupon code"
-                  />
+                  <input type="text" class="form-control" name="coupon" placeholder="Coupon code" />
                   <span class="input-group-append">
                     <button type="submit" class="btn btn-primary">Apply</button>
                   </span>
@@ -165,41 +153,62 @@
 </section>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
+
 <script>
   function payWithPaystack() {
-    const email = '{{ request.user.email }}';  // Get the user's email from the template context
-    const totalPrice = {{ cart.get_cart_total|floatformat:2 }};  // Get the total price from the cart context and format to 2 decimal places
-    
-    const handler = PaystackPop.setup({
-      key: 'pk_live_3015509bcee8ed8ffa149fdd3c9cd8fd827af326',  // Replace with a valid Paystack public key
-      email: email,
-      amount: totalPrice * 100,  // Convert to kobo
-      currency: 'GHS',
-      ref: 'PS_' + Math.floor((Math.random() * 1000000000) + 1),  // Generate a unique reference
-      callback: function(response) {
-        alert('Payment successful. Transaction reference: ' + response.reference);
-        fetch('/verify_payment/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+    fetch("{% url 'initiate_payment' %}")  // Call backend to get reference
+      .then(response => response.json())
+      .then(data => {
+        var handler = PaystackPop.setup({
+          key: "pk_live_3015509bcee8ed8ffa149fdd3c9cd8fd827af326",
+          email: "{{ request.user.email }}",
+          amount: "{{ cart.get_cart_total|floatformat:0 }}" * 100,
+          currency: "GHS",
+          ref: data.payment_reference,  // Use backend-generated reference
+
+          callback: function (response) {
+            window.location.href = `https://127.0.0.1:8000/accounts/success/?order_id=${data.payment_reference}`;
           },
-          body: JSON.stringify({ reference: response.reference })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success') {
-            window.location.href = '{% url "order_history" %}';
-          } else {
-            alert('Payment verification failed. Please try again.');
+
+          onClose: function () {
+            alert("Transaction was not completed.");
           }
         });
-      },
-      onClose: function() {
-        alert('Payment was not completed.');
-      }
-    });
-    handler.openIframe();
+
+        handler.openIframe();
+      });
   }
+
+
+  document.getElementById("paystack-button").onclick = function (e) {
+    payWithPaystack();
+    e.preventDefault();
+  };
+
+  function updateCartItem(selectElement, cartItemId) {
+    const quantity = selectElement.value;
+
+    fetch("{% url 'update_cart_item' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({
+        "cart_item_id": cartItemId,
+        "quantity": quantity
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert("Error updating cart");
+        }
+      });
+  }
+
 </script>
+
 {% endblock %}
