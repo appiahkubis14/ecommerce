@@ -5,6 +5,12 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Create your views here.
 
+# from django.db.models import Q
+# from django.shortcuts import render
+# from products.models import Product, Category
+# from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
+# Create your views here.
 
 def index(request):
     query = Product.objects.all()
@@ -34,6 +40,8 @@ def index(request):
         products = paginator.page(paginator.num_pages)
     except Exception as e:
         print(e)
+        # Ensure `products` has a fallback value to avoid UnboundLocalError
+        products = []
 
     context = {
         'products': products,
@@ -42,6 +50,7 @@ def index(request):
         'selected_sort': selected_sort,
     }
     return render(request, 'home/index.html', context)
+
 
 
 def product_search(request):
