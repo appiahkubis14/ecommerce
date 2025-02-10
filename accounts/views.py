@@ -269,9 +269,6 @@ def process_payment(request):
     return redirect("cart")
 
 
-
-
-
 @require_POST
 @login_required
 def update_cart_item(request):
