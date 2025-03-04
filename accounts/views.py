@@ -1,8 +1,6 @@
 import os
 import json
 import uuid
-import razorpay
-import paystackapi
 from weasyprint import CSS, HTML
 from products.models import *
 from django.urls import reverse
@@ -28,7 +26,6 @@ from django.http import HttpResponseNotFound
 
 # Create your views here.
 
-
 def login_page(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -38,7 +35,7 @@ def login_page(request):
         if user is not None:
             login(request, user)
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": True, "redirect_url": "/"})  # Redirect to home
+                return JsonResponse({"success": True, "redirect_url": "/product/"})  # Redirect to home
             return redirect("index")  # Redirect to home page on normal form submission
         else:
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
