@@ -29,7 +29,7 @@ from django.http import HttpResponseNotFound
 # Create your views here.
 
 
-def login_view(request):
+def login_page(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -43,12 +43,12 @@ def login_view(request):
         else:
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False})  # Send error response
-            return render(request, "auth/login.html", {"error": "Invalid credentials"})
+            return render(request, "accounts/login.html", {"error": "Invalid credentials"})
     
-    return render(request, "auth/login.html")
+    return render(request, "accounts/login.html")
 
 
-def signup_view(request):
+def register_page(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -57,16 +57,16 @@ def signup_view(request):
         if User.objects.filter(username=username).exists():
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": "Username already exists"})
-            return render(request, "auth/signup.html", {"error": "Username already exists"})
+            return render(request, "accounts/register.html", {"error": "Username already exists"})
 
         user = User.objects.create_user(username=username, email=email, password=password)
         login(request, user)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"success": True})
-        return redirect("home")  # Redirect after successful signup
+        return redirect("home")  # Redirect after successful register
 
-    return render(request, "auth/signup.html")
+    return render(request, "accounts/register.html")
 
 
 @login_required
