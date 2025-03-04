@@ -205,49 +205,110 @@ def verify_paystack_payment(request):
         return redirect("payment_failed")
 
 
+# @login_required
+# def process_payment(request):
+#     if request.method == "POST":
+#         user = request.user
+#         cart = Cart.objects.get(user=user)
+
+#         # Ensure the cart has items
+#         if not cart.cart_items.exists():
+#             messages.error(request, "Your cart is empty.")
+#             return redirect("cart")
+
+#         # Generate unique order ID (or use a payment gateway response)
+#         import uuid
+#         order_id = str(uuid.uuid4())[:10]
+
+#         # Create Order
+#         order = Order.objects.create(
+#             user=user,
+#             order_id=order_id,
+#             payment_status="Paid",  # Assuming payment success
+#             shipping_address=user.profile.address,  # Modify as needed
+#             payment_mode="Credit Card",  # Modify based on actual payment mode
+#             order_total_price=cart.get_total_price(),
+#             grand_total=cart.get_total_price(),
+#         )
+
+#         # Move items from cart to order
+#         for cart_item in cart.cart_items.all():
+#             OrderItem.objects.create(
+#                 order=order,
+#                 product=cart_item.product,
+#                 quantity=cart_item.quantity,
+#                 product_price=cart_item.get_product_price(),
+#             )
+
+#         # Clear the cart
+#         cart.cart_items.all().delete()
+
+#         messages.success(request, "Your order has been placed successfully!")
+#         return redirect("order_history")  # Redirect to orders page
+
+#     return redirect("cart")
+
+
 @login_required
 def process_payment(request):
+    """
+    Process payment and create order.
+    Shipping cost is added to the cart total.
+    """
     if request.method == "POST":
         user = request.user
-        cart = Cart.objects.get(user=user)
-
+        
+        # Retrieve the cart. Ensure it's not paid yet.
+        try:
+            cart = Cart.objects.get(user=user, is_paid=False)
+        except Cart.DoesNotExist:
+            messages.error(request, "Your cart is empty.")
+            return redirect("cart")
+        
         # Ensure the cart has items
         if not cart.cart_items.exists():
             messages.error(request, "Your cart is empty.")
             return redirect("cart")
 
-        # Generate unique order ID (or use a payment gateway response)
-        import uuid
+        # Generate a unique order ID
         order_id = str(uuid.uuid4())[:10]
 
-        # Create Order
+        # Define shipping cost.
+        # You can hard-code this value or pull it from settings (e.g., settings.SHIPPING_COST)
+        shipping_cost = settings.SHIPPING_COST
+
+        # Calculate the total cost including shipping.
+        cart_total = cart.get_total_price()  # Assuming this method returns the cart's total price
+        order_total = cart_total + shipping_cost
+
+        # Create the Order. Make sure your Order model has fields for order_total_price and optionally shipping_cost.
         order = Order.objects.create(
             user=user,
             order_id=order_id,
-            payment_status="Paid",  # Assuming payment success
-            shipping_address=user.profile.address,  # Modify as needed
-            payment_mode="Credit Card",  # Modify based on actual payment mode
-            order_total_price=cart.get_total_price(),
-            grand_total=cart.get_total_price(),
+            payment_status="Paid",  # Change this as per your payment flow
+            shipping_address=user.profile.address,  # Ensure the user profile has an address
+            payment_mode="Credit Card",  # Adjust based on actual payment mode
+            order_total_price=order_total,
+            grand_total=order_total,  # If applicable, adjust if there are taxes or discounts
+            shipping_cost=shipping_cost  # Ensure your Order model has this field
         )
 
-        # Move items from cart to order
+        # Transfer items from the cart to the order.
         for cart_item in cart.cart_items.all():
             OrderItem.objects.create(
                 order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
-                product_price=cart_item.get_product_price(),
+                product_price=cart_item.get_product_price(),  # Ensure this returns the correct price
             )
 
-        # Clear the cart
+        # Clear cart items after order creation
         cart.cart_items.all().delete()
 
         messages.success(request, "Your order has been placed successfully!")
-        return redirect("order_history")  # Redirect to orders page
+        return redirect("order_history")  # Redirect to the order history page
 
     return redirect("cart")
-
 
 @require_POST
 @login_required
