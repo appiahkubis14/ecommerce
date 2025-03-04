@@ -29,66 +29,44 @@ from django.http import HttpResponseNotFound
 # Create your views here.
 
 
-def login_page(request):
-    next_url = request.GET.get('next') # Get the next URL from the query parameter
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user_obj = User.objects.filter(username=username)
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
 
-        if not user_obj.exists():
-            messages.warning(request, 'Account not found!')
-            return HttpResponseRedirect(request.path_info)
-
-        # if not user_obj[0].profile.is_email_verified:
-        #     messages.error(request, 'Account not verified!')
-        #     return HttpResponseRedirect(request.path_info)
-
-        user_obj = authenticate(username=username, password=password)
-        if user_obj:
-            login(request, user_obj)
-            messages.success(request, 'Login Successfull.')
-
-            # Check if the next URL is safe
-            if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts=request.get_host()):
-                return redirect(next_url)
-            else:
-                return redirect('index')
-
-        messages.warning(request, 'Invalid credentials.')
-        return HttpResponseRedirect(request.path_info)
-
-    return render(request, 'accounts/login.html')
+        if user is not None:
+            login(request, user)
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": True})  # Send JSON response for AJAX
+            return redirect("home")  # Redirect for normal form submission
+        else:
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False})  # Send error response
+            return render(request, "auth/login.html", {"error": "Invalid credentials"})
+    
+    return render(request, "auth/login.html")
 
 
-def register_page(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+def signup_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        email = request.POST.get("email")
 
-        user_obj = User.objects.filter(username=username, email=email)
+        if User.objects.filter(username=username).exists():
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "message": "Username already exists"})
+            return render(request, "auth/signup.html", {"error": "Username already exists"})
 
-        if user_obj.exists():
-            messages.info(request, 'Username or email already exists!')
-            return HttpResponseRedirect(request.path_info)
+        user = User.objects.create_user(username=username, email=email, password=password)
+        login(request, user)
 
-        user_obj = User.objects.create(
-            username=username, first_name=first_name, last_name=last_name, email=email)
-        user_obj.set_password(password)
-        user_obj.save()
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
+        return redirect("home")  # Redirect after successful signup
 
-        profile = Profile.objects.get(user=user_obj)
-        profile.email_token = str(uuid.uuid4())
-        profile.save()
-
-        # send_account_activation_email(email, profile.email_token)
-        # messages.success(request, "An email has been sent to your mail.")
-        # return HttpResponseRedirect(request.path_info)
-
-    return render(request, 'accounts/register.html')
+    return render(request, "auth/signup.html")
 
 
 @login_required

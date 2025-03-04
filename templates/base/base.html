@@ -130,7 +130,7 @@
     
         forms.forEach((form) => {
           form.addEventListener("submit", function (event) {
-            event.preventDefault(); // Prevent immediate form submission
+            event.preventDefault(); // Prevent default form submission
     
             let submitButton = form.querySelector("button[type='submit']");
             let loader = document.createElement("div");
@@ -142,21 +142,36 @@
     
             let formData = new FormData(form);
     
-            // Simulated form submission with AJAX
+            // Use Fetch API for AJAX submission
             fetch(form.action, {
               method: form.method,
               body: formData,
+              headers: {
+                "X-Requested-With": "XMLHttpRequest", // Indicate AJAX request
+              },
             })
-              .then((response) => response.json())
+              .then((response) => {
+                if (response.redirected) {
+                  // If Django redirects, follow the redirect
+                  window.location.href = response.url;
+                } else {
+                  return response.json(); // If no redirect, handle JSON response
+                }
+              })
               .then((data) => {
-                submitButton.innerHTML = "Register";
-                submitButton.disabled = false;
-                showPopup(data.success ? "Success! Your action was completed." : "Error! Something went wrong.", data.success);
+                if (data && data.success) {
+                  showPopup("Success! Redirecting...", true);
+                  setTimeout(() => window.location.reload(), 1000); // Reload page on success
+                } else {
+                  showPopup("Login failed. Please check your details.", false);
+                }
               })
               .catch(() => {
-                submitButton.innerHTML = "Register";
-                submitButton.disabled = false;
                 showPopup("Error! Please try again.", false);
+              })
+              .finally(() => {
+                submitButton.innerHTML = "Submit";
+                submitButton.disabled = false;
               });
           });
         });
@@ -175,6 +190,7 @@
         }
       });
     </script>
+    
     
   </head>
 

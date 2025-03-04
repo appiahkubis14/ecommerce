@@ -58,7 +58,7 @@
                 Don't have account? <a href="{% url 'register' %}">Sign up</a>
               </p>
 
-              <div class="line"></div>
+              {% comment %} <div class="line"></div>
 
               <div class="media-options">
                 <a href="#" class="field facebook">
@@ -72,7 +72,7 @@
                   <img src="{% static 'images/google.png' %}" alt="" class="google-img"/>
                   <span>Login with Google</span>
                 </a>
-              </div>
+              </div> {% endcomment %}
             </form>
           </div>
         </div>
