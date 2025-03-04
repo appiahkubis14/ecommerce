@@ -50,31 +50,31 @@ def login_page(request):
 
 def register_page(request):
     if request.method == "POST":
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        username = request.POST.get("username")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
+        # Check if the username already exists
         if User.objects.filter(username=username).exists():
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": False, "message": "Username already exists"})
-            return render(request, "accounts/register.html", {"error": "Username already exists"})
+            return JsonResponse({"success": False, "message": "Username already taken."})
 
-        user_obj = User.objects.create(
-            username=username, first_name=first_name, last_name=last_name, email=email)
-        user_obj.set_password(password)
-        user_obj.save()
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({"success": False, "message": "Email is already in use."})
 
-        profile = Profile.objects.get(user=user_obj)
-        profile.email_token = str(uuid.uuid4())
-        profile.save()
-        
-        login(request, user_obj)
+        # Create and save the user
+        user = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password,
+        )
+        user.save()
 
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"success": True})
-        return redirect("index")  # Redirect after successful register
+        return JsonResponse({"success": True, "message": "Registration successful!"})
 
     return render(request, "accounts/register.html")
 
