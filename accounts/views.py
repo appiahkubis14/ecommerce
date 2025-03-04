@@ -27,21 +27,34 @@ from django.http import HttpResponseNotFound
 # Create your views here.
 
 def login_page(request):
+    next_url = request.GET.get("next", "/product/")  # Default to /product/ if no next URL is provided
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
+        user_obj = User.objects.filter(username=username).first()
 
-        if user is not None:
-            login(request, user)
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": True, "redirect_url": "/product/"})  # Redirect to home
-            return redirect("index")  # Redirect to home page on normal form submission
-        else:
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": False, "message": "Invalid credentials"})
-            return render(request, "accounts/login.html", {"error": "Invalid credentials"})
-    
+        if not user_obj:
+            messages.warning(request, "Account not found!")
+            return HttpResponseRedirect(request.path_info)
+
+        user_obj = authenticate(username=username, password=password)
+
+        if user_obj:
+            login(request, user_obj)
+            messages.success(request, "Login Successful.")
+
+            # Ensure next_url is safe
+            if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    return JsonResponse({"success": True, "redirect_url": next_url})
+                return redirect(next_url)
+
+            return redirect("index")  # Fallback redirect
+
+        messages.warning(request, "Invalid credentials.")
+        return HttpResponseRedirect(request.path_info)
+
     return render(request, "accounts/login.html")
 
 
@@ -520,6 +533,5 @@ def delete_account(request):
         user.delete()
         messages.success(request, "Your account has been deleted successfully.")
         return redirect('index')
-
 
 
