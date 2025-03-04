@@ -50,17 +50,27 @@ def login_page(request):
 
 def register_page(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        email = request.POST.get("email")
+        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
         if User.objects.filter(username=username).exists():
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": "Username already exists"})
             return render(request, "accounts/register.html", {"error": "Username already exists"})
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        login(request, user)
+        user_obj = User.objects.create(
+            username=username, first_name=first_name, last_name=last_name, email=email)
+        user_obj.set_password(password)
+        user_obj.save()
+
+        profile = Profile.objects.get(user=user_obj)
+        profile.email_token = str(uuid.uuid4())
+        profile.save()
+        
+        login(request, user_obj)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"success": True})
