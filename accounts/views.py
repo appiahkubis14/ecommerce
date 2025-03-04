@@ -27,36 +27,67 @@ from django.http import HttpResponseNotFound
 # Create your views here.
 
 def login_page(request):
-    next_url = request.GET.get("next", "/product/")  # Default to /product/ if no next URL is provided
-
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user_obj = User.objects.filter(username=username).first()
-
-        if not user_obj:
-            messages.warning(request, "Account not found!")
-            return HttpResponseRedirect(request.path_info)
-
-        user_obj = authenticate(username=username, password=password)
-
-        if user_obj:
-            login(request, user_obj)
-            messages.success(request, "Login Successful.")
-
-            # Ensure next_url is safe
-            if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
-                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                    return JsonResponse({"success": True, "redirect_url": next_url})
-                return redirect(next_url)
-
-            return redirect("index")  # Fallback redirect
-
-        messages.warning(request, "Invalid credentials.")
-        return HttpResponseRedirect(request.path_info)
-
+        # Get and strip the username and password values
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+        
+        # Check that both username and password are provided
+        if not username or not password:
+            error_message = "Please enter both username and password."
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "message": error_message})
+            return render(request, "accounts/login.html", {"error": error_message})
+        
+        # Authenticate the user with the given username and password
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            # If authentication is successful, log the user in
+            login(request, user)
+            # Optionally, you can check for a "next" parameter in POST data
+            redirect_url = request.POST.get("next", "/")
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": True, "redirect_url": redirect_url})
+            return redirect(redirect_url)
+        else:
+            error_message = "Invalid username or password."
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "message": error_message})
+            return render(request, "accounts/login.html", {"error": error_message})
+    
+    # For GET requests, simply render the login page.
     return render(request, "accounts/login.html")
 
+# def login_page(request):
+#     next_url = request.GET.get("next", "/product/")  # Default to /product/ if no next URL is provided
+
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+#         user_obj = User.objects.filter(username=username).first()
+
+#         if not user_obj:
+#             messages.warning(request, "Account not found!")
+#             return HttpResponseRedirect(request.path_info)
+
+#         user_obj = authenticate(username=username, password=password)
+
+#         if user_obj:
+#             login(request, user_obj)
+#             messages.success(request, "Login Successful.")
+
+#             # Ensure next_url is safe
+#             if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
+#                 if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+#                     return JsonResponse({"success": True, "redirect_url": next_url})
+#                 return redirect(next_url)
+
+#             return redirect("index")  # Fallback redirect
+
+#         messages.warning(request, "Invalid credentials.")
+#         return HttpResponseRedirect(request.path_info)
+
+#     return render(request, "accounts/login.html")
 
 def register_page(request):
     if request.method == "POST":
