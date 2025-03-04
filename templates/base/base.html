@@ -40,7 +40,59 @@
     <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" />
+    <style>
+      /* Loader styling */
+.loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.7s linear infinite;
+  margin-left: 10px;
+}
 
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom message popup */
+.message-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: none;
+  z-index: 1000;
+}
+
+.success-popup {
+  background-color: #28a745;
+  color: white;
+}
+
+.error-popup {
+  background-color: #dc3545;
+  color: white;
+}
+
+.fade-out {
+  animation: fadeOut 3s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+    </style>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
@@ -72,6 +124,58 @@
     <script src="/media/js/isotope.pkgd.min.js"></script>
     <!-- Waypoints Js -->
     <script src="/media/js/jquery.waypoints.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const forms = document.querySelectorAll("form");
+    
+        forms.forEach((form) => {
+          form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent immediate form submission
+    
+            let submitButton = form.querySelector("button[type='submit']");
+            let loader = document.createElement("div");
+            loader.className = "loader";
+    
+            submitButton.disabled = true;
+            submitButton.innerHTML = "Processing...";
+            submitButton.appendChild(loader);
+    
+            let formData = new FormData(form);
+    
+            // Simulated form submission with AJAX
+            fetch(form.action, {
+              method: form.method,
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                submitButton.innerHTML = "Register";
+                submitButton.disabled = false;
+                showPopup(data.success ? "Success! Your action was completed." : "Error! Something went wrong.", data.success);
+              })
+              .catch(() => {
+                submitButton.innerHTML = "Register";
+                submitButton.disabled = false;
+                showPopup("Error! Please try again.", false);
+              });
+          });
+        });
+    
+        function showPopup(message, isSuccess) {
+          let popup = document.createElement("div");
+          popup.className = "message-popup " + (isSuccess ? "success-popup" : "error-popup");
+          popup.innerText = message;
+          document.body.appendChild(popup);
+          popup.style.display = "block";
+    
+          setTimeout(() => {
+            popup.classList.add("fade-out");
+            setTimeout(() => popup.remove(), 3000);
+          }, 2000);
+        }
+      });
+    </script>
+    
   </head>
 
   <style>
