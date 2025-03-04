@@ -4,8 +4,8 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # User view urls with login, register, logout, and email activation.
-    path('login/', login_view, name="login"),
-    path('register/', signup_view, name="register"),
+    path('login/', login_page, name="login"),
+    path('register/', register_page, name="register"),
     path('logout/', user_logout, name='logout'),
     path('activate/<email_token>/', activate_email_account, name="activate_email"),
 
