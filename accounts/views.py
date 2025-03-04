@@ -39,7 +39,7 @@ def login_page(request):
             login(request, user)
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True})  # Send JSON response for AJAX
-            return redirect("home")  # Redirect for normal form submission
+            return redirect("index")  # Redirect for normal form submission
         else:
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False})  # Send error response
@@ -64,7 +64,7 @@ def register_page(request):
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"success": True})
-        return redirect("home")  # Redirect after successful register
+        return redirect("index")  # Redirect after successful register
 
     return render(request, "accounts/register.html")
 
