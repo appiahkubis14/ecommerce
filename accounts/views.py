@@ -38,11 +38,11 @@ def login_page(request):
         if user is not None:
             login(request, user)
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": True})  # Send JSON response for AJAX
-            return redirect("index")  # Redirect for normal form submission
+                return JsonResponse({"success": True, "redirect_url": "/"})  # Redirect to home
+            return redirect("index")  # Redirect to home page on normal form submission
         else:
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": False})  # Send error response
+                return JsonResponse({"success": False, "message": "Invalid credentials"})
             return render(request, "accounts/login.html", {"error": "Invalid credentials"})
     
     return render(request, "accounts/login.html")
