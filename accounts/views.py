@@ -30,32 +30,27 @@ from django.http import HttpResponseNotFound
 
 
 def login_page(request):
-    next_url = request.GET.get('next') # Get the next URL from the query parameter
+    next_url = request.GET.get('next')
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
         user_obj = User.objects.filter(username=username)
 
         if not user_obj.exists():
-            messages.warning(request, 'Account not found!')
+            messages.error(request, 'Account not found! Please register first.')
             return HttpResponseRedirect(request.path_info)
-
-        # if not user_obj[0].profile.is_email_verified:
-        #     messages.error(request, 'Account not verified!')
-        #     return HttpResponseRedirect(request.path_info)
 
         user_obj = authenticate(username=username, password=password)
         if user_obj:
             login(request, user_obj)
-            messages.success(request, 'Login Successfull.')
+            messages.success(request, 'Login Successful!')
 
-            # Check if the next URL is safe
-            if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts=request.get_host()):
+            if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
-            else:
-                return redirect('index')
+            return redirect('index')
 
-        messages.warning(request, 'Invalid credentials.')
+        messages.error(request, 'Invalid username or password. Please try again.')
         return HttpResponseRedirect(request.path_info)
 
     return render(request, 'accounts/login.html')
@@ -69,27 +64,21 @@ def register_page(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        user_obj = User.objects.filter(username=username, email=email)
-
-        if user_obj.exists():
-            messages.info(request, 'Username or email already exists!')
+        if User.objects.filter(username=username).exists():
+            messages.warning(request, 'Username already exists! Try another one.')
             return HttpResponseRedirect(request.path_info)
 
-        user_obj = User.objects.create(
-            username=username, first_name=first_name, last_name=last_name, email=email)
-        user_obj.set_password(password)
+        if User.objects.filter(email=email).exists():
+            messages.warning(request, 'Email is already in use. Try another email.')
+            return HttpResponseRedirect(request.path_info)
+
+        user_obj = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
         user_obj.save()
 
-        profile = Profile.objects.get(user=user_obj)
-        profile.email_token = str(uuid.uuid4())
-        profile.save()
-
-        # send_account_activation_email(email, profile.email_token)
-        # messages.success(request, "An email has been sent to your mail.")
-        # return HttpResponseRedirect(request.path_info)
+        messages.success(request, 'Registration successful! You can now log in.')
+        return redirect('login')
 
     return render(request, 'accounts/register.html')
-
 
 @login_required
 def user_logout(request):
