@@ -28,35 +28,35 @@
   }
 </style>
 <section class="banner-two">
-  <div class="banner-two__shape-left d-none d-lg-block wow bounceInLeft" data-wow-duration="1s"
+  {% comment %} <div class="banner-two__shape-left d-none d-lg-block wow bounceInLeft" data-wow-duration="1s"
       data-wow-delay=".5s">
       <img src="assets/images/shape/tote1.png" alt="shape">
   </div>
   <div class="banner-two__shape-right d-none d-lg-block wow bounceInRight" data-wow-duration="1s"
       data-wow-delay=".1s">
       <img class="sway_Y__animation" src="assets/images/shape/tote2.png" alt="shape">
-  </div>
+  </div> {% endcomment %}
   <div class="swiper banner-two__slider">
-      <div class="swiper-wrapper">
+      <div class="swiper-wrapper" style="height: 40vh;">
           <div class="swiper-slide">
               <div class="slide-bg" data-background="assets/images/banner/tote-banner1.jpg"></div>
               <div class="container">
               
                   <div class="banner-two__content" style="padding-bottom: 33px;padding-top: 47px;">
-                      <h4 data-animation="fadeInUp" data-delay="1s"> GET <span class="primary-color">20% OFF</span> TODAY</h4>
+                      <h4 data-animation="fadeInUp" data-delay="1s"> GET <span class="primary-color" style="color: black;">20% OFF</span> TODAY</h4>
                       <h1 data-animation="fadeInUp" data-delay="1.3s">Discover Premium <br>
-                          <span class="primary-color">Tote Bags</span></h1>
+                          <span class="primary-color" style="color: black;">Tote Bags</span></h1>
                       <p class="mt-40" data-animation="fadeInUp" data-delay="1.5s">Sustainability meets style. Elevate your everyday carry with our handcrafted tote bags, designed for fashion-forward individuals.</p>
-                      <div class="banner-two__info mt-30" data-animation="fadeInUp" data-delay="1.7s">
+                      {% comment %} <div class="banner-two__info mt-30" data-animation="fadeInUp" data-delay="1.7s">
                           <span class="mb-10">Starting at</span>
                           <h3>>₵0.00</h3>
-                      </div>
-                      <div class="btn-wrp mt-65">
+                      </div> {% endcomment %}
+                      {% comment %} <div class="btn-wrp mt-65">
                           <a href="#shop" class="btn-one" data-animation="fadeInUp"
                               data-delay="1.8s"><span>Shop Now</span></a>
                           <a class="btn-one-light ml-20" href="#shop" data-animation="fadeInUp"
                               data-delay="1.9s"><span>View Details</span></a>
-                      </div>
+                      </div> {% endcomment %}
                   </div>
               </div>
           </div>
@@ -84,10 +84,10 @@
           </div>
       </div>
   </div>
-  <div class="banner-two__arry-btn">
+  {% comment %} <div class="banner-two__arry-btn">
       <button class="arry-prev mb-15 banner-two__arry-prev"><i class="fa-light fa-chevron-left"></i></button>
       <button class="arry-next active banner-two__arry-next"><i class="fa-light fa-chevron-right"></i></button>
-  </div>
+  </div> {% endcomment %}
 </section>
 
 

@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse
-from home.models import ShippingAddress
+# from home.models import ShippingAddress
 from django.contrib.auth.models import User
 from django.template.loader import get_template
 from accounts.models import Profile, Cart, CartItem, Order, OrderItem
@@ -23,7 +23,14 @@ from accounts.forms import UserUpdateForm, UserProfileForm, ShippingAddressForm,
 from .utils import Paystack
 import requests
 from django.http import HttpResponseNotFound
-
+from .models import ShippingAddress
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import ShippingAddress
+import json
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.views import View
 # Create your views here.
 
 def login_page(request):
@@ -39,55 +46,26 @@ def login_page(request):
                 return JsonResponse({"success": False, "message": error_message})
             return render(request, "accounts/login.html", {"error": error_message})
         
-        # Authenticate the user with the given username and password
+        # Authenticate the user
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            # If authentication is successful, log the user in
+            # Log the user in
             login(request, user)
-            # Optionally, you can check for a "next" parameter in POST data
-            redirect_url = request.POST.get("next", "/")
+            # Redirect to home page
+            redirect_url = request.POST.get("next", "index") 
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "redirect_url": redirect_url})
-            return redirect(redirect_url)
+            return redirect('index')
         else:
             error_message = "Invalid username or password."
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": error_message})
             return render(request, "accounts/login.html", {"error": error_message})
+        
+        
     
-    # For GET requests, simply render the login page.
+    # Render the login page for GET requests
     return render(request, "accounts/login.html")
-
-# def login_page(request):
-#     next_url = request.GET.get("next", "/product/")  # Default to /product/ if no next URL is provided
-
-#     if request.method == "POST":
-#         username = request.POST.get("username")
-#         password = request.POST.get("password")
-#         user_obj = User.objects.filter(username=username).first()
-
-#         if not user_obj:
-#             messages.warning(request, "Account not found!")
-#             return HttpResponseRedirect(request.path_info)
-
-#         user_obj = authenticate(username=username, password=password)
-
-#         if user_obj:
-#             login(request, user_obj)
-#             messages.success(request, "Login Successful.")
-
-#             # Ensure next_url is safe
-#             if url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
-#                 if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-#                     return JsonResponse({"success": True, "redirect_url": next_url})
-#                 return redirect(next_url)
-
-#             return redirect("index")  # Fallback redirect
-
-#         messages.warning(request, "Invalid credentials.")
-#         return HttpResponseRedirect(request.path_info)
-
-#     return render(request, "accounts/login.html")
 
 def register_page(request):
     if request.method == "POST":
@@ -166,10 +144,10 @@ def add_to_cart(request, uid):
 
 
 
-@login_required
+login_required
 def cart(request):
-    cart_obj = None
     user = request.user
+    cart_obj = None
 
     try:
         cart_obj = Cart.objects.get(is_paid=False, user=user)
@@ -177,16 +155,79 @@ def cart(request):
         messages.warning(request, "Your cart is empty. Please add a product to cart.")
         return redirect(reverse('index'))
 
-    if cart_obj:
-        cart_total_in_paise = cart_obj.get_cart_total()  # Cart total
-        payment_reference = str(uuid.uuid4())  # Generate unique reference
+    cart_total_in_paise = cart_obj.get_cart_total()
+    payment_reference = str(uuid.uuid4())  # Generate unique reference
 
-    context = {
-        'cart': cart_obj,
-        'quantity_range': range(1, 11),
-        'payment_reference': payment_reference  # Pass reference to template
-    }
-    return render(request, 'accounts/cart.html', context)
+    # Get or initialize shipping address
+    try:
+        shipping_address = ShippingAddress.objects.get(user=user)
+        has_shipping_address = True
+    except ShippingAddress.DoesNotExist:
+        shipping_address = None
+        has_shipping_address = False
+
+    if request.method == "GET":
+        # Handle AJAX request for shipping details
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if shipping_address:
+                return JsonResponse({
+                    "has_shipping_address": True,
+                    "first_name": shipping_address.first_name,
+                    "last_name": shipping_address.last_name,
+                    "street": shipping_address.street,
+                    "street_number": shipping_address.street_number,
+                    "city": shipping_address.city,
+                    "zip_code": shipping_address.zip_code,
+                    "country": shipping_address.country,
+                    "phone": shipping_address.phone,
+                    "current_address": shipping_address.current_address,
+                })
+            return JsonResponse({"has_shipping_address": False})
+
+        # Render cart page with shipping details
+        return render(request, "accounts/cart.html", {
+            "cart": cart_obj,
+            "quantity_range": range(1, 11),
+            "payment_reference": payment_reference,
+            "shipping_address": shipping_address,
+        })
+    elif request.method == "POST":
+        # Handle shipping address update
+        try:
+            data = json.loads(request.body)
+            if shipping_address:
+                shipping_address.first_name = data.get("first_name", shipping_address.first_name)
+                shipping_address.last_name = data.get("last_name", shipping_address.last_name)
+                shipping_address.street = data.get("street", shipping_address.street)
+                shipping_address.street_number = data.get("street_number", shipping_address.street_number)
+                shipping_address.city = data.get("city", shipping_address.city)
+                shipping_address.zip_code = data.get("zip_code", shipping_address.zip_code)
+                shipping_address.country = data.get("country", shipping_address.country)
+                shipping_address.phone = data.get("phone", shipping_address.phone)
+                shipping_address.current_address = data.get("current_address", shipping_address.current_address)
+            else:
+                shipping_address = ShippingAddress.objects.create(
+                    user=user,
+                    first_name=data["first_name"],
+                    last_name=data["last_name"],
+                    street=data["street"],
+                    street_number=data["street_number"],
+                    city=data["city"],
+                    zip_code=data["zip_code"],
+                    country=data["country"],
+                    phone=data["phone"],
+                    current_address=data["current_address"],
+                )
+
+            shipping_address.save()
+            return JsonResponse({"success": True, "message": "Shipping address updated successfully."})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "Invalid JSON data"}, status=400)
+        except KeyError as e:
+            return JsonResponse({"success": False, "message": f"Missing field: {str(e)}"}, status=400)
+
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
 
 
 
@@ -232,50 +273,6 @@ def verify_paystack_payment(request):
         return redirect("payment_success")
     else:
         return redirect("payment_failed")
-
-
-# @login_required
-# def process_payment(request):
-#     if request.method == "POST":
-#         user = request.user
-#         cart = Cart.objects.get(user=user)
-
-#         # Ensure the cart has items
-#         if not cart.cart_items.exists():
-#             messages.error(request, "Your cart is empty.")
-#             return redirect("cart")
-
-#         # Generate unique order ID (or use a payment gateway response)
-#         import uuid
-#         order_id = str(uuid.uuid4())[:10]
-
-#         # Create Order
-#         order = Order.objects.create(
-#             user=user,
-#             order_id=order_id,
-#             payment_status="Paid",  # Assuming payment success
-#             shipping_address=user.profile.address,  # Modify as needed
-#             payment_mode="Credit Card",  # Modify based on actual payment mode
-#             order_total_price=cart.get_total_price(),
-#             grand_total=cart.get_total_price(),
-#         )
-
-#         # Move items from cart to order
-#         for cart_item in cart.cart_items.all():
-#             OrderItem.objects.create(
-#                 order=order,
-#                 product=cart_item.product,
-#                 quantity=cart_item.quantity,
-#                 product_price=cart_item.get_product_price(),
-#             )
-
-#         # Clear the cart
-#         cart.cart_items.all().delete()
-
-#         messages.success(request, "Your order has been placed successfully!")
-#         return redirect("order_history")  # Redirect to orders page
-
-#     return redirect("cart")
 
 
 @login_required
@@ -453,9 +450,7 @@ def profile_view(request, username):
         'user_form': user_form,
         'profile_form': profile_form
     }
-
     return render(request, 'accounts/profile.html', context)
-
 
 @login_required
 def change_password(request):
@@ -508,33 +503,29 @@ def order_history(request):
 def create_order(cart):
     """
     Creates an order from a cart after successful payment.
-    Ensures grand_total is always provided.
     """
-    # Get order total price from cart
     order_total = cart.get_cart_total()
+    grand_total = order_total  # Modify if additional charges apply
 
-    # Compute grand_total (considering discounts or taxes)
-    # Replace this with actual calculations if you have coupons, shipping fees, etc.
-    grand_total = order_total  # Modify this if discounts or additional charges apply
-
-    order, created = Order.objects.get_or_create(
+    order = Order.objects.create(
         user=cart.user,
-        order_id=cart.paystack_reference,  # Use the Paystack reference for order tracking
+        order_id=cart.paystack_reference,  # Use Paystack reference for tracking
         payment_status="Paid",
-        shipping_address=cart.user.profile.shipping_address if cart.user.profile else "",
+        shipping_address=cart.user.profile.shipping_address if cart.user.profile else None,
         payment_mode="Paystack",
         order_total_price=order_total,
-        grand_total=grand_total,  # Ensure grand_total is included
+        grand_total=grand_total,
     )
 
-    # Create OrderItem instances for each item in the cart
+    # Create OrderItem instances for each cart item
     cart_items = CartItem.objects.filter(cart=cart)
     for cart_item in cart_items:
-        OrderItem.objects.get_or_create(
+        OrderItem.objects.create(
             order=order,
+            shipping_address=order.shipping_address,
             product=cart_item.product,
             quantity=cart_item.quantity,
-            product_price=cart_item.get_product_price()
+            product_price=cart_item.get_product_price(),
         )
 
     return order
@@ -566,3 +557,77 @@ def delete_account(request):
         return redirect('index')
 
 
+
+
+class ShippingAddressView(View):
+    """Handles getting and updating a user's shipping address."""
+    
+    # Prevents redirect to login page; returns JSON instead
+    login_url = None  # Prevents redirect to login page
+    redirect_field_name = None  # Ensures no redirect
+
+    def dispatch(self, request, *args, **kwargs):
+        """Ensure JSON response for unauthenticated users instead of redirecting."""
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, "error": "User is not authenticated"}, status=401)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        """Handles retrieving the shipping address for an AJAX request."""
+        
+        # ✅ Ensure request is AJAX
+        if request.headers.get("X-Requested-With") != "XMLHttpRequest":
+            return JsonResponse({"success": False, "error": "Invalid request. Expected AJAX."}, status=400)
+
+        try:
+            shipping_address = ShippingAddress.objects.get(user=request.user)
+            return JsonResponse({
+                "success": True,
+                "has_shipping_address": True,
+                "first_name": shipping_address.first_name,
+                "last_name": shipping_address.last_name,
+                "street": shipping_address.street,
+                "street_number": shipping_address.street_number,
+                "city": shipping_address.city,
+                "zip_code": shipping_address.zip_code,
+                "country": shipping_address.country,
+                "phone": shipping_address.phone,
+                "current_address": shipping_address.current_address,
+            })
+
+        except ShippingAddress.DoesNotExist:
+            return JsonResponse({"success": True, "has_shipping_address": False})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": f"Unexpected error: {str(e)}"}, status=500)
+
+    def post(self, request):
+        """Handles creating or updating the shipping address."""
+
+        if request.headers.get("X-Requested-With") != "XMLHttpRequest":
+            return JsonResponse({"success": False, "error": "Invalid request. Expected AJAX."}, status=400)
+
+        try:
+            data = json.loads(request.body)
+            required_fields = [
+                "first_name", "last_name", "street", "street_number",
+                "city", "zip_code", "country", "phone", "current_address"
+            ]
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                return JsonResponse({"success": False, "error": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            shipping_address, created = ShippingAddress.objects.update_or_create(
+                user=request.user,
+                defaults={field: data[field] for field in required_fields}
+            )
+
+            message = "Shipping address created successfully." if created else "Shipping address updated successfully."
+            return JsonResponse({"success": True, "message": message})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON data"}, status=400)
+        
+        except Exception as e:
+            print(f"🔥 Unexpected error: {e}") 
+            return JsonResponse({"success": False, "error": f"An error occurred: {str(e)}"}, status=500)

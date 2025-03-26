@@ -56,4 +56,6 @@ urlpatterns = [
     # path('payment/verify/', verify_payment, name='verify_payment'),
 
     path('process_payment/', process_payment, name='process_payment'),
+    
+    path("shipping-address/", ShippingAddressView.as_view(), name="shipping_address_view"),
 ]

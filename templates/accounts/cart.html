@@ -1,6 +1,97 @@
 {% extends "base/base.html" %}
 {% block title %}Shopping Cart{% endblock %}
 {% block start %} {% load static %}
+{% load crispy_forms_tags %}
+
+
+
+  <style>
+    /* Smooth Fade-in and Zoom Animation */
+    @keyframes fadeInZoom {
+      from {
+          opacity: 0;
+          transform: scale(0.8);
+      }
+      to {
+          opacity: 1;
+          transform: scale(1);
+      }
+    }
+
+    /* Modal Animation */
+    .modal.fade .modal-dialog {
+      animation: fadeInZoom 0.4s ease-out;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+      background: #ffffff;
+    }
+
+    /* Modal Header */
+    .modal-header {
+      background: #28a745;  /* Green header */
+      color: white;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    .modal-header .close {
+      color: white;
+      opacity: 0.9;
+      font-size: 22px;
+    }
+
+    .modal-header .close:hover {
+      opacity: 1;
+    }
+
+    /* Modal Form Styling */
+    .modal-body {
+      padding: 20px;
+    }
+
+    /* Input Fields */
+    .form-control {
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      padding: 12px;
+      transition: 0.3s;
+    }
+
+    .form-control:focus {
+      border-color: #28a745;
+      box-shadow: 0px 0px 5px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Form Groups */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    /* Button Styling */
+    .btn-primary {
+      background: #28a745;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      background: #218838;
+    }
+
+    /* Button Hover Effects */
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+
+  </style>
 
 <section class="section-content padding-y">
   <div class="container">
@@ -77,8 +168,65 @@
             </tbody>
           </table>
 
+
+                 
+                    <!-- Shipping Address Modal -->
+          <div id="shippingAddressModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Enter Your Shipping Address</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="shippingForm">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" id="first_name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" id="last_name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Street</label>
+                                <input type="text" id="street" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Street Number</label>
+                                <input type="text" id="street_number" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>City</label>
+                                <input type="text" id="city" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Zip Code</label>
+                                <input type="text" id="zip_code" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input type="text" id="country" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" id="phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" id="current_address">
+                                <label for="current_address">Set as current address</label>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="saveShippingAddress()">Save Address</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+
+
           <div class="card-body border-top">
-            <button id="rzp-button1" class="btn btn-primary float-md-right" onclick="payWithPaystack()">
+            <button id="rzp-button1" class="btn btn-primary float-md-right" onclick="checkShippingAddress()">
               Make Purchase <i class="fa fa-chevron-right"></i>
             </button>
 
@@ -90,8 +238,7 @@
 
         <div class="alert alert-success mt-3">
           <p class="icontext">
-            <i class="icon text-success fa fa-truck"></i> Free Delivery within
-            1-2 weeks
+            <i class="icon text-success fa fa-truck"></i> Delivery fee varies with location
           </p>
         </div>
       </main>
@@ -155,55 +302,128 @@
 <script src="https://js.paystack.co/v1/inline.js"></script>
 
 <script>
-  function payWithPaystack() {
-    fetch("{% url 'initiate_payment' %}")  // Call backend to get reference
-      .then(response => response.json())
-      .then(data => {
-        var handler = PaystackPop.setup({
-          key: "pk_live_3015509bcee8ed8ffa149fdd3c9cd8fd827af326",
-          email: "{{ request.user.email }}",
-          amount: "{{ cart.get_cart_total|floatformat:0 }}" * 100,
-          currency: "GHS",
-          ref: data.payment_reference,  // Use backend-generated reference
-
-          callback: function (response) {
-            window.location.href = `https://gbekearthub.com/accounts/success/?order_id=${data.payment_reference}`;
-          },
-          onClose: function () {
-            alert("Transaction was not completed.");
-          }
-        });
-        handler.openIframe();
-      });
-  }
-  document.getElementById("paystack-button").onclick = function (e) {
-    payWithPaystack();
-    e.preventDefault();
-  };
-  function updateCartItem(selectElement, cartItemId) {
-    const quantity = selectElement.value;
-
-    fetch("{% url 'update_cart_item' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}"
-      },
-      body: JSON.stringify({
-        "cart_item_id": cartItemId,
-        "quantity": quantity
-      })
+  function checkShippingAddress() {
+    fetch("{% url 'cart' %}", {  // Using 'cart' since shipping is handled there
+        method: "GET",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+        },
     })
+    .then(response => response.json().catch(() => null))  // Handle non-JSON responses
+    .then(data => {
+        console.log("Parsed Response Data:", data);
+
+        // Always show the modal for shipping address
+        $("#shippingAddressModal").modal("show"); 
+        console.log("🚀 Shipping address modal triggered!");
+
+        if (data && data.has_shipping_address) {
+            // Autofill form fields if shipping address exists
+            document.getElementById("first_name").value = data.first_name || "";
+            document.getElementById("last_name").value = data.last_name || "";
+            document.getElementById("street").value = data.street || "";
+            document.getElementById("street_number").value = data.street_number || "";
+            document.getElementById("city").value = data.city || "";
+            document.getElementById("zip_code").value = data.zip_code || "";
+            document.getElementById("country").value = data.country || "";
+            document.getElementById("phone").value = data.phone || "";
+            document.getElementById("current_address").checked = data.current_address || false;
+        }
+    })
+    .catch(error => {
+        console.error("Error checking shipping address:", error);
+        alert("Failed to fetch shipping address. Please try again.");
+    });
+}
+
+function saveShippingAddress() {
+    const addressData = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        street: document.getElementById("street").value,
+        street_number: document.getElementById("street_number").value,
+        city: document.getElementById("city").value,
+        zip_code: document.getElementById("zip_code").value,
+        country: document.getElementById("country").value,
+        phone: document.getElementById("phone").value,
+        current_address: document.getElementById("current_address").checked,
+    };
+
+    fetch("{% url 'cart' %}", {  // Using 'cart' since shipping is handled there
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify(addressData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Shipping address saved successfully!");
+            $("#shippingAddressModal").modal("hide");  // Hide modal
+            payWithPaystack();  // Proceed with payment
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error saving shipping address:", error);
+        alert("Failed to save shipping address. Please try again.");
+    });
+}
+
+    // 🚀 Function to initiate Paystack payment
+    function payWithPaystack() {
+      fetch("{% url 'initiate_payment' %}")  // Get backend-generated reference
       .then(response => response.json())
       .then(data => {
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert("Error updating cart");
-        }
-      });
-  }
+          var handler = PaystackPop.setup({
+              key: "pk_live_3015509bcee8ed8ffa149fdd3c9cd8fd827af326",
+              email: "{{ request.user.email }}",
+              amount: parseFloat("{{ cart.get_cart_total|floatformat:0 }}") * 100,
+              currency: "GHS",
+              ref: data.payment_reference,  // Backend-generated reference
 
-</script>
+              callback: function (response) {
+                  window.location.href = `http://127.0.0.1:8000/accounts/success/?order_id=${data.payment_reference}`;
+              },
+              onClose: function () {
+                  alert("Transaction was not completed.");
+              }
+          });
+          handler.openIframe();
+      })
+      .catch(error => console.error("Error initiating payment:", error));
+    }
+
+    // Function to update cart item quantity
+    function updateCartItem(selectElement, cartItemId) {
+        const quantity = selectElement.value;
+
+        fetch("{% url 'update_cart_item' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                "cart_item_id": cartItemId,
+                "quantity": quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert("Error updating cart");
+            }
+        })
+        .catch(error => console.error("Error updating cart item:", error));
+    }
+
+  </script>
+  
 
 {% endblock %}

@@ -3,7 +3,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from accounts.models import Profile
 from home.models import ShippingAddress
-
+from .models import ShippingAddress
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
@@ -17,11 +17,11 @@ class UserUpdateForm(forms.ModelForm):
         fields = ['first_name', 'last_name', 'email']
 
 
-class ShippingAddressForm(forms.ModelForm):
-    class Meta:
-        model = ShippingAddress
-        fields = '__all__'
-        exclude = ['user']
+# class ShippingAddressForm(forms.ModelForm):
+#     class Meta:
+#         model = ShippingAddress
+#         fields = '__all__'
+#         exclude = ['user']
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):
@@ -37,3 +37,12 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         label="New password confirmation",
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )
+
+
+
+class ShippingAddressForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAddress
+        fields = ["first_name", "last_name", "street", "street_number", "city", "zip_code", "country", "phone","current_address"]
+
+        

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'products',
     'accounts',
     'home',
+    
 
     # Django Social Auth Configurations
     'django.contrib.sites',
