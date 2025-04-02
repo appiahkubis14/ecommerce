@@ -32,7 +32,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 # Create your views here.
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def login_page(request):
     if request.method == "POST":
         # Get and strip the username and password values
@@ -119,11 +121,7 @@ def activate_email_account(request, email_token):
 @login_required
 def add_to_cart(request, uid):
     try:
-        # variant = request.GET.get('size')
-        # if not variant:
-        #     messages.warning(request, 'Please select a size variant!')
-        #     return redirect(request.META.get('HTTP_REFERER'))
-
+    
         product = get_object_or_404(Product, uid=uid)
         cart, _ = Cart.objects.get_or_create(user=request.user, is_paid=False)
         # size_variant = get_object_or_404(SizeVariant, size_name=variant)
@@ -144,80 +142,67 @@ def add_to_cart(request, uid):
 
 
 
-login_required
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+import json
+import uuid
+from django.http import JsonResponse
+from django.contrib import messages
+from .models import Cart, ShippingAddress  # Ensure models are properly imported
+
+@login_required(login_url="login")  # Redirect to login page if not authenticated
 def cart(request):
-    user = request.user
+    user = request.user if request.user.is_authenticated else None
+
+    if not user:
+        messages.warning(request, "You need to log in to access your cart.")
+        return redirect("login")
+
     cart_obj = None
 
     try:
         cart_obj = Cart.objects.get(is_paid=False, user=user)
     except Cart.DoesNotExist:
         messages.warning(request, "Your cart is empty. Please add a product to cart.")
-        return redirect(reverse('index'))
+        return redirect("index")
 
-    cart_total_in_paise = cart_obj.get_cart_total()
     payment_reference = str(uuid.uuid4())  # Generate unique reference
 
-    # Get or initialize shipping address
     try:
         shipping_address = ShippingAddress.objects.get(user=user)
-        has_shipping_address = True
     except ShippingAddress.DoesNotExist:
         shipping_address = None
-        has_shipping_address = False
 
     if request.method == "GET":
-        # Handle AJAX request for shipping details
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            if shipping_address:
-                return JsonResponse({
-                    "has_shipping_address": True,
-                    "first_name": shipping_address.first_name,
-                    "last_name": shipping_address.last_name,
-                    "street": shipping_address.street,
-                    "street_number": shipping_address.street_number,
-                    "city": shipping_address.city,
-                    "zip_code": shipping_address.zip_code,
-                    "country": shipping_address.country,
-                    "phone": shipping_address.phone,
-                    "current_address": shipping_address.current_address,
-                })
-            return JsonResponse({"has_shipping_address": False})
+            return JsonResponse({
+                "has_shipping_address": bool(shipping_address),
+                "first_name": shipping_address.first_name if shipping_address else "",
+                "last_name": shipping_address.last_name if shipping_address else "",
+                "street": shipping_address.street if shipping_address else "",
+                "street_number": shipping_address.street_number if shipping_address else "",
+                "city": shipping_address.city if shipping_address else "",
+                "zip_code": shipping_address.zip_code if shipping_address else "",
+                "country": shipping_address.country if shipping_address else "",
+                "phone": shipping_address.phone if shipping_address else "",
+                "current_address": shipping_address.current_address if shipping_address else "",
+            })
 
-        # Render cart page with shipping details
         return render(request, "accounts/cart.html", {
             "cart": cart_obj,
             "quantity_range": range(1, 11),
             "payment_reference": payment_reference,
             "shipping_address": shipping_address,
         })
+
     elif request.method == "POST":
-        # Handle shipping address update
         try:
             data = json.loads(request.body)
             if shipping_address:
-                shipping_address.first_name = data.get("first_name", shipping_address.first_name)
-                shipping_address.last_name = data.get("last_name", shipping_address.last_name)
-                shipping_address.street = data.get("street", shipping_address.street)
-                shipping_address.street_number = data.get("street_number", shipping_address.street_number)
-                shipping_address.city = data.get("city", shipping_address.city)
-                shipping_address.zip_code = data.get("zip_code", shipping_address.zip_code)
-                shipping_address.country = data.get("country", shipping_address.country)
-                shipping_address.phone = data.get("phone", shipping_address.phone)
-                shipping_address.current_address = data.get("current_address", shipping_address.current_address)
+                for field in ["first_name", "last_name", "street", "street_number", "city", "zip_code", "country", "phone", "current_address"]:
+                    setattr(shipping_address, field, data.get(field, getattr(shipping_address, field)))
             else:
-                shipping_address = ShippingAddress.objects.create(
-                    user=user,
-                    first_name=data["first_name"],
-                    last_name=data["last_name"],
-                    street=data["street"],
-                    street_number=data["street_number"],
-                    city=data["city"],
-                    zip_code=data["zip_code"],
-                    country=data["country"],
-                    phone=data["phone"],
-                    current_address=data["current_address"],
-                )
+                shipping_address = ShippingAddress.objects.create(user=user, **data)
 
             shipping_address.save()
             return JsonResponse({"success": True, "message": "Shipping address updated successfully."})
@@ -228,7 +213,6 @@ def cart(request):
             return JsonResponse({"success": False, "message": f"Missing field: {str(e)}"}, status=400)
 
     return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
-
 
 
 
