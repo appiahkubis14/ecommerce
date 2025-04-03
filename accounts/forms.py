@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from accounts.models import Profile
-from home.models import ShippingAddress
+# from home.models import ShippingAddress
 from .models import ShippingAddress
 
 class UserProfileForm(forms.ModelForm):

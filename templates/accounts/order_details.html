@@ -75,43 +75,44 @@
       </main>
       <!-- Order Details Summary End -->
 
-      <!-- Shipping Details -->
       <main class="col-md-6">
         <h3 class="mb-4">Shipping Details</h3>
         <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Recipient Information</h5>
-            <dl class="dlist-align">
-              <dt>Recipient Name:</dt>
-              <dd class="text-right">
-                <strong>{{ order.shipping_address.first_name }} {{ order.shipping_address.last_name }}</strong>
-              </dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Street Address:</dt>
-              <dd class="text-right">
-                <strong>{{ order.shipping_address.street }} {{ order.shipping_address.street_number|default:"" }}</strong>
-              </dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>City:</dt>
-              <dd class="text-right"><strong>{{ order.shipping_address.city }}</strong></dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Zip Code:</dt>
-              <dd class="text-right"><strong>{{ order.shipping_address.zip_code }}</strong></dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Country:</dt>
-              <dd class="text-right"><strong>{{ order.shipping_address.country }}</strong></dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Phone Number:</dt>
-              <dd class="text-right"><strong>{{ order.shipping_address.phone }}</strong></dd>
-            </dl>
-          </div>
+            <div class="card-body">
+                <h5 class="card-title">Recipient Information</h5>
+                <dl class="dlist-align">
+                    <dt>Recipient Name:</dt>
+                    <dd class="text-right">
+                        <strong>{{ first_name }} {{ last_name }}</strong>
+                    </dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Street Address:</dt>
+                    <dd class="text-right">
+                        <strong>{{ street_address }}</strong>
+                    </dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>City:</dt>
+                    <dd class="text-right"><strong>{{ city }}</strong></dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Zip Code:</dt>
+                    <dd class="text-right"><strong>{{ zip_code|default:"" }}</strong></dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Country:</dt>
+                    <dd class="text-right"><strong>{{ country }}</strong></dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Phone Number:</dt>
+                    <dd class="text-right"><strong>{{ phone }}</strong></dd>
+                </dl>
+            </div>
         </div>
-      </main>
+    </main>
+    
+      
       <!-- Shipping Details End -->
 
       <!-- Payment Summary -->

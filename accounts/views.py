@@ -33,6 +33,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+import json
+import uuid
+from django.http import JsonResponse
+from django.contrib import messages
+from .models import Cart, ShippingAddress  # Ensure models are properly imported
 
 @csrf_exempt
 def login_page(request):
@@ -142,13 +149,7 @@ def add_to_cart(request, uid):
 
 
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-import json
-import uuid
-from django.http import JsonResponse
-from django.contrib import messages
-from .models import Cart, ShippingAddress  # Ensure models are properly imported
+
 
 @login_required(login_url="login")  # Redirect to login page if not authenticated
 def cart(request):
@@ -190,7 +191,7 @@ def cart(request):
 
         return render(request, "accounts/cart.html", {
             "cart": cart_obj,
-            "quantity_range": range(1, 11),
+            "quantity_range": range(1,11),
             "payment_reference": payment_reference,
             "shipping_address": shipping_address,
         })
@@ -484,34 +485,72 @@ def order_history(request):
 
 
 # Create an order view
+from .models import Order, CartItem, Profile, ShippingAddress
+
 def create_order(cart):
     """
     Creates an order from a cart after successful payment.
     """
+    # Calculate the total price and grand total
     order_total = cart.get_cart_total()
     grand_total = order_total  # Modify if additional charges apply
 
-    order = Order.objects.create(
-        user=cart.user,
-        order_id=cart.paystack_reference,  # Use Paystack reference for tracking
-        payment_status="Paid",
-        shipping_address=cart.user.profile.shipping_address if cart.user.profile else None,
-        payment_mode="Paystack",
-        order_total_price=order_total,
-        grand_total=grand_total,
-    )
+    # Fetch the user's shipping address
+    shipping_address = ShippingAddress.objects.filter(user=cart.user).first()
+    print(f"Shipping Address: {shipping_address}")
 
-    # Create OrderItem instances for each cart item
+    # Check if the shipping address exists and print its details
+    if shipping_address:
+        # Manually convert the country to string
+        country = str(shipping_address.country)  # Convert Country object to a string
+
+        print(f"Shipping Address for user {cart.user.username}:")
+        print(f"First Name: {shipping_address.first_name}")
+        print(f"Last Name: {shipping_address.last_name}")
+        print(f"Street: {shipping_address.street}")
+        print(f"Street Number: {shipping_address.street_number}")
+        print(f"Zip Code: {shipping_address.zip_code}")
+        print(f"City: {shipping_address.city}")
+        print(f"Country: {country}")  # Use the string representation of the country
+        print(f"Phone: {shipping_address.phone}")
+        print(f"Current Address: {shipping_address.current_address}")
+    else:
+        # If no shipping address found, print an error message
+        print("No shipping address found for this user.")
+        # You can choose to raise an error or redirect to address update page
+        raise ValueError(f"No shipping address found for user {cart.user.username}. Please update your address.")
+
+    # Now that we have confirmed the shipping address, proceed to create the order
+    try:
+        order = Order.objects.create(
+            user=cart.user,
+            order_id=cart.paystack_reference,  # Use Paystack reference for tracking
+            payment_status="Paid",
+            shipping_address=shipping_address,  # Link the shipping address to the order
+            payment_mode="Paystack",
+            order_total_price=order_total,
+            grand_total=grand_total,
+        )
+    except Exception as e:
+        # Log any errors that occur during order creation
+        print(f"Error creating the order: {e}")
+        raise
+
+    # Loop through the cart items and create order items
     cart_items = CartItem.objects.filter(cart=cart)
     for cart_item in cart_items:
-        OrderItem.objects.create(
-            order=order,
-            shipping_address=order.shipping_address,
-            product=cart_item.product,
-            quantity=cart_item.quantity,
-            product_price=cart_item.get_product_price(),
-        )
+        try:
+            OrderItem.objects.get_or_create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                product_price=cart_item.get_product_price()
+            )
+        except Exception as e:
+            # Log any errors that occur while creating order items
+            print(f"Error creating order item for product {cart_item.product.name}: {e}")
 
+    # Return the created order object
     return order
 
 
@@ -520,12 +559,62 @@ def create_order(cart):
 def order_details(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = OrderItem.objects.filter(order=order)
+    
+    # Split the shipping_address into components (you may need to adjust the splitting logic)
+    address_parts = order.shipping_address.split(",")
+    
+    # Assuming the format is "FirstName LastName, Street, City, Country"
+    address_parts = order.shipping_address.split(",")
+
+    # Initialize the variables
+    first_name = ""
+    last_name = ""
+    street_address = ""
+    street_number = ""
+    city = ""
+    zip_code = ""
+    country = ""
+    phone = ""  # Assuming phone is part of the address as well, if applicable
+
+    # Handle if there are at least 4 parts (name, street, city, country)
+    if len(address_parts) >= 4:
+        first_name_last_name = address_parts[0].strip()
+        street_address = address_parts[1].strip()
+        city = address_parts[2].strip()
+        country = address_parts[3].strip()
+        
+        # Split the name further into first and last names
+        name_parts = first_name_last_name.split()
+        if len(name_parts) >= 2:
+            first_name = name_parts[0]
+            last_name = " ".join(name_parts[1:])
+        else:
+            first_name = name_parts[0]
+            last_name = ""
+
+    # Further handle cases where street address, city, or country might not be split correctly
+    if len(address_parts) > 4:
+        # For street number and zip code
+        if len(address_parts) >= 5:
+            street_number = address_parts[4].strip()
+        if len(address_parts) >= 6:
+            zip_code = address_parts[5].strip()
+
     context = {
         'order': order,
         'order_items': order_items,
         'order_total_price': sum(item.get_total_price() for item in order_items),
         # 'coupon_discount': order.coupon.discount_amount if order.coupon else 0,
-        'grand_total': order.get_order_total_price()
+        'grand_total': order.get_order_total_price(),
+         "order": order,
+        "first_name": first_name,
+        "last_name": last_name,
+        "street_address": street_address,
+        "street_number": street_number,
+        "city": city,
+        "zip_code": zip_code,
+        "country": country,
+        "phone": phone,
     }
     return render(request, 'accounts/order_details.html', context)
 

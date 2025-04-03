@@ -123,6 +123,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    "django.middleware.locale.LocaleMiddleware"
 ]
 
 ROOT_URLCONF = 'ecomm.urls'
