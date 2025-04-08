@@ -62,11 +62,17 @@ from django.contrib.auth import authenticate, login
 import logging
 
 logger = logging.getLogger(__name__)
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from django.urls import reverse
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def login_page(request):
     if request.method == "POST":
-        # Get and strip the username and password values
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
 
@@ -82,28 +88,31 @@ def login_page(request):
         if user is not None:
             # Log the user in
             login(request, user)
-            # Get the redirect URL, default to home (index) page
-            redirect_url = request.POST.get("next", reverse("index"))  # Reverse the 'index' URL to get full URL
+            redirect_url = request.POST.get("next", reverse("index"))  # Default to homepage if no next URL
 
-            # Debugging log
-            logger.debug(f"Redirect URL: {redirect_url}")
-
-            # Return appropriate response for AJAX or non-AJAX requests
+            # Return response for AJAX requests
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "redirect_url": redirect_url})
-
-            # For non-AJAX requests, perform the redirect
-            return redirect(redirect_url)  # This will redirect to the homepage
-
+            
+            # Non-AJAX requests, redirect to home
+            return redirect(redirect_url)
+        
         else:
             error_message = "Invalid username or password."
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": error_message})
             return render(request, "accounts/login.html", {"error": error_message})
 
-    
     # Render the login page for GET requests
     return render(request, "accounts/login.html")
+
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.http import JsonResponse
 
 def register_page(request):
     if request.method == "POST":
@@ -121,7 +130,7 @@ def register_page(request):
         if User.objects.filter(email=email).exists():
             return JsonResponse({"success": False, "message": "Email is already in use."})
 
-        # Create and save the user
+        # Create and save the user (do NOT log them in automatically)
         user = User.objects.create_user(
             username=username,
             first_name=first_name,
@@ -129,12 +138,23 @@ def register_page(request):
             email=email,
             password=password,
         )
+        # Print all the user details
+        print(f"User created: {user}")
+        print(f"Username: {user.username}")
+        print(f"First Name: {user.first_name}")
+        print(f"Last Name: {user.last_name}")
+        print(f"Email: {user.email}")
+        print(f"Password (hashed): {user.password}")
         user.save()
 
-        return JsonResponse({"success": True, "message": "Registration successful!"})
+        # Handle AJAX requests with JSON response
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": True, "message": "Registration successful!", "redirect_url": "/accounts/login/"})
+        
+        # Non-AJAX requests, just redirect to the login page
+        return redirect("login")
 
     return render(request, "accounts/register.html")
-
 
 @login_required
 def user_logout(request):

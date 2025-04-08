@@ -124,67 +124,99 @@
     <script src="/media/js/isotope.pkgd.min.js"></script>
     <!-- Waypoints Js -->
     <script src="/media/js/jquery.waypoints.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const forms = document.querySelectorAll("form");
+   <!-- Include SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Handle login form submission
+    $('#login-form').on('submit', function(event) {
+      event.preventDefault();
+  
+      var form = $(this);
+      var formData = form.serialize();
       
-        forms.forEach((form) => {
-          form.addEventListener("submit", function (event) {
-            event.preventDefault();
-      
-            let submitButton = form.querySelector("button[type='submit']");
-            let loader = document.createElement("span");
-            loader.className = "loader";
-            submitButton.disabled = true;
-            submitButton.innerHTML = "Processing...";
-            submitButton.appendChild(loader);
-      
-            let formData = new FormData(form);
-      
-            fetch(form.action, {
-              method: form.method,
-              body: formData,
-              headers: {
-                "X-Requested-With": "XMLHttpRequest",
-              },
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.success) {
-                  showPopup("Success! Redirecting...", true);
-                  setTimeout(() => {
-                    window.location.href = data.redirect_url;
-                  }, 1000);
-                  
-                } else {
-                  showPopup(data.message || "Registration failed. Try again.", false);
-                }
-              })
-              .catch(() => {
-                showPopup("Error! Please try again.", false);
-              })
-              .finally(() => {
-                submitButton.innerHTML = "Submit";
-                submitButton.disabled = false;
+      $.ajax({
+          url: form.attr('action'),
+          type: 'POST',
+          data: formData,
+          success: function(response) {
+              if (response.success) {
+                  // Show success message and then redirect
+                  Swal.fire({
+                      title: 'Welcome!',
+                      text: 'You have successfully logged in.',
+                      icon: 'success'
+                  }).then((result) => {
+                      if (result.isConfirmed) {
+                          window.location.href = response.redirect_url;  // Redirect to the given URL
+                      }
+                  });
+              } else {
+                  // Show error message
+                  Swal.fire({
+                      title: 'Error!',
+                      text: response.message,
+                      icon: 'error'
+                  });
+              }
+          },
+          error: function() {
+              Swal.fire({
+                  title: 'Error!',
+                  text: 'Something went wrong. Please try again later.',
+                  icon: 'error'
               });
-          });
-        });
-      
-        function showPopup(message, isSuccess) {
-          let popup = document.createElement("div");
-          popup.className = "message-popup " + (isSuccess ? "success-popup" : "error-popup");
-          popup.innerText = message;
-          document.body.appendChild(popup);
-          popup.style.display = "block";
-      
-          setTimeout(() => {
-            popup.classList.add("fade-out");
-            setTimeout(() => popup.remove(), 3000);
-          }, 2000);
-        }
+          }
       });
-      
-    </script>
+  });
+  
+
+    // Handle register form submission
+    $('#register-form').on('submit', function(event) {
+        event.preventDefault();
+
+        var form = $(this);
+        var formData = form.serialize();
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Show success message and redirect to login page
+                    Swal.fire({
+                        title: 'Success!',
+                        text: response.message + ' Redirecting to login page...',
+                        icon: 'success',
+                        timer: 2000,  // Auto redirect after 2 seconds
+                        showConfirmButton: false
+                    }).then(function() {
+                        window.location.href = response.redirect_url;
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message,
+                        icon: 'error'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Something went wrong. Please try again later.',
+                    icon: 'error'
+                });
+            }
+        });
+    });
+});
+</script>
+
     
     
   </head>
