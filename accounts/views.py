@@ -41,37 +41,66 @@ from django.http import JsonResponse
 from django.contrib import messages
 from .models import Cart, ShippingAddress  # Ensure models are properly imported
 
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Your login_page view
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+import logging
+
+logger = logging.getLogger(__name__)
+from django.urls import reverse
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+import logging
+
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def login_page(request):
     if request.method == "POST":
         # Get and strip the username and password values
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
-        
+
         # Check that both username and password are provided
         if not username or not password:
             error_message = "Please enter both username and password."
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": error_message})
             return render(request, "accounts/login.html", {"error": error_message})
-        
+
         # Authenticate the user
         user = authenticate(request, username=username, password=password)
         if user is not None:
             # Log the user in
             login(request, user)
-            # Redirect to home page
-            redirect_url = request.POST.get("next", "index") 
+            # Get the redirect URL, default to home (index) page
+            redirect_url = request.POST.get("next", reverse("index"))  # Reverse the 'index' URL to get full URL
+
+            # Debugging log
+            logger.debug(f"Redirect URL: {redirect_url}")
+
+            # Return appropriate response for AJAX or non-AJAX requests
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "redirect_url": redirect_url})
-            return redirect('index')
+
+            # For non-AJAX requests, perform the redirect
+            return redirect(redirect_url)  # This will redirect to the homepage
+
         else:
             error_message = "Invalid username or password."
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "message": error_message})
             return render(request, "accounts/login.html", {"error": error_message})
-        
-        
+
     
     # Render the login page for GET requests
     return render(request, "accounts/login.html")
@@ -552,6 +581,7 @@ def create_order(cart):
 
     # Return the created order object
     return order
+
 
 
 # Order Details view

@@ -152,7 +152,10 @@
               .then((data) => {
                 if (data.success) {
                   showPopup("Success! Redirecting...", true);
-                  setTimeout(() => (window.location.href = "/accounts/login/"), 1000);
+                  setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                  }, 1000);
+                  
                 } else {
                   showPopup(data.message || "Registration failed. Try again.", false);
                 }
